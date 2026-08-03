@@ -52,7 +52,8 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
     expedientes, loading, error, addExpediente, updateExpediente,
     addActuacion, concluirExpediente, eliminarExpediente,
   } = useExpedientes(userEmail);
-  const { isAdmin } = useRolActual(userEmail);
+  const { isAdmin, rol } = useRolActual(userEmail);
+  const esCliente = rol === 'cliente';
 
   const [search, setSearch] = useState('');
   const [materia, setMateria] = useState<Materia | 'todas'>('todas');
@@ -134,6 +135,7 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
                 activeMateria={materia}
                 onChangeMateria={setMateria}
                 onNuevoExpediente={() => setShowNewModal(true)}
+                soloLectura={esCliente}
               />
               <StatsGrid stats={stats} active={quickFilter} onSelect={setQuickFilter} />
               <MateriaDistribution stats={stats} />
@@ -157,6 +159,7 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
                   <ExpedienteDetail
                     key={selected.id}
                     expediente={selected}
+                    soloLectura={esCliente}
                     onBack={() => setSelectedId(null)}
                     onUpdate={(patch) => updateExpediente(selected.id, patch).catch((e) => alert('Error al guardar: ' + e.message))}
                     onAddActuacion={(desc) => addActuacion(selected.id, desc)}

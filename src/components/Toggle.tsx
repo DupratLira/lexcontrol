@@ -1,14 +1,16 @@
 interface Props {
   checked: boolean;
   onChange: (v: boolean) => void;
+  disabled?: boolean;
 }
 
-export default function Toggle({ checked, onChange }: Props) {
+export default function Toggle({ checked, onChange, disabled }: Props) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${
         checked ? 'bg-navy-900' : 'bg-navy-900/15'
       }`}
     >

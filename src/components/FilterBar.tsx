@@ -6,9 +6,10 @@ interface Props {
   activeMateria: Materia | 'todas';
   onChangeMateria: (m: Materia | 'todas') => void;
   onNuevoExpediente: () => void;
+  soloLectura?: boolean;
 }
 
-export default function FilterBar({ activeMateria, onChangeMateria, onNuevoExpediente }: Props) {
+export default function FilterBar({ activeMateria, onChangeMateria, onNuevoExpediente, soloLectura }: Props) {
   const pill = (label: string, value: Materia | 'todas') => {
     const active = activeMateria === value;
     return (
@@ -35,12 +36,14 @@ export default function FilterBar({ activeMateria, onChangeMateria, onNuevoExped
         {pill('Todas', 'todas')}
         {MATERIAS.map((m) => pill(m, m))}
       </div>
-      <button
-        onClick={onNuevoExpediente}
-        className="flex items-center gap-2 bg-navy-900 hover:bg-navy-800 text-cream px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
-      >
-        <Plus size={16} /> Nuevo Expediente
-      </button>
+      {!soloLectura && (
+        <button
+          onClick={onNuevoExpediente}
+          className="flex items-center gap-2 bg-navy-900 hover:bg-navy-800 text-cream px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
+        >
+          <Plus size={16} /> Nuevo Expediente
+        </button>
+      )}
     </div>
   );
 }
