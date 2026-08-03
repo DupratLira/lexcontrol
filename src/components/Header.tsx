@@ -7,9 +7,10 @@ interface Props {
   onLogout: () => void;
   isAdmin?: boolean;
   onOpenUsuarios?: () => void;
+  mostrarZip?: boolean;
 }
 
-export default function Header({ userEmail, onConectar, onExportZip, onLogout, isAdmin, onOpenUsuarios }: Props) {
+export default function Header({ userEmail, onConectar, onExportZip, onLogout, isAdmin, onOpenUsuarios, mostrarZip = true }: Props) {
   const initials = userEmail.slice(0, 2).toUpperCase();
   return (
     <header className="bg-navy-900 text-cream border-b border-navy-700/60">
@@ -41,13 +42,15 @@ export default function Header({ userEmail, onConectar, onExportZip, onLogout, i
           >
             <Calendar size={16} /> <span className="hidden sm:inline">Conectar</span>
           </button>
-          <button
-            onClick={onExportZip}
-            title="Descargar ZIP"
-            className="flex items-center gap-2 bg-navy-800 hover:bg-navy-700 transition-colors text-cream/90 text-sm px-2.5 sm:px-3 py-2 rounded-lg border border-navy-700"
-          >
-            <Download size={16} /> <span className="hidden sm:inline">ZIP</span>
-          </button>
+          {mostrarZip && (
+            <button
+              onClick={onExportZip}
+              title="Descargar ZIP"
+              className="flex items-center gap-2 bg-navy-800 hover:bg-navy-700 transition-colors text-cream/90 text-sm px-2.5 sm:px-3 py-2 rounded-lg border border-navy-700"
+            >
+              <Download size={16} /> <span className="hidden sm:inline">ZIP</span>
+            </button>
+          )}
           <div className="flex items-center gap-2 pl-1.5 sm:pl-3 sm:border-l sm:border-navy-700">
             <div className="hidden md:flex w-9 h-9 rounded-full bg-gold-500 text-navy-900 items-center justify-center font-semibold text-sm shrink-0">
               {initials}
