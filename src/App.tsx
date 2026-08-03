@@ -12,8 +12,10 @@ import CalendarioView from './components/CalendarioView';
 import EscritosView from './components/EscritosView';
 import InstallPrompt from './components/InstallPrompt';
 import Login from './components/Login';
+import AdminUsuarios from './components/AdminUsuarios';
 import { useAuth } from './hooks/useAuth';
 import { useExpedientes } from './hooks/useExpedientes';
+import { useRolActual } from './hooks/useRolActual';
 import { computeStats, isVencimientoUrgente, isCongelado } from './utils/stats';
 import { downloadExpedientesZip } from './utils/export';
 import type { Materia, QuickFilter, TabMode } from './types';
@@ -41,6 +43,7 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
     expedientes, loading, error, addExpediente, updateExpediente,
     addActuacion, concluirExpediente, eliminarExpediente,
   } = useExpedientes(userEmail);
+  const { isAdmin } = useRolActual(userEmail);
 
   const [search, setSearch] = useState('');
   const [materia, setMateria] = useState<Materia | 'todas'>('todas');
@@ -48,6 +51,7 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
   const [tab, setTab] = useState<TabMode>('tabla');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
+  const [showUsuarios, setShowUsuarios] = useState(false);
 
   const stats = useMemo(() => computeStats(expedientes), [expedientes]);
 
@@ -95,10 +99,12 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
       <Header
         userEmail={userEmail}
         onConectar={() =>
-          alert('La integración con Google Calendar / servicios externos se configura próximamente.')
+          alert('Para sincronizar un vencimiento con Google Calendar, abre el expediente y usa el botón "Sincronizar con Google Calendar" en la sección de Fecha Límite.')
         }
         onExportZip={() => downloadExpedientesZip(expedientes)}
         onLogout={onLogout}
+        isAdmin={isAdmin}
+        onOpenUsuarios={() => setShowUsuarios(true)}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
@@ -175,6 +181,8 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
           onCreate={(data) => addExpediente(data).catch((e) => alert('Error al crear: ' + e.message))}
         />
       )}
+
+      {showUsuarios && <AdminUsuarios onClose={() => setShowUsuarios(false)} />}
     </div>
   );
 }

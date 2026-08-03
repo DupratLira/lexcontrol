@@ -1,13 +1,15 @@
-import { Calendar, Download, LogOut } from 'lucide-react';
+import { Calendar, Download, LogOut, Users } from 'lucide-react';
 
 interface Props {
   userEmail: string;
   onConectar: () => void;
   onExportZip: () => void;
   onLogout: () => void;
+  isAdmin?: boolean;
+  onOpenUsuarios?: () => void;
 }
 
-export default function Header({ userEmail, onConectar, onExportZip, onLogout }: Props) {
+export default function Header({ userEmail, onConectar, onExportZip, onLogout, isAdmin, onOpenUsuarios }: Props) {
   const initials = userEmail.slice(0, 2).toUpperCase();
   return (
     <header className="bg-navy-900 text-cream border-b border-navy-700/60">
@@ -23,6 +25,14 @@ export default function Header({ userEmail, onConectar, onExportZip, onLogout }:
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          {isAdmin && (
+            <button
+              onClick={onOpenUsuarios}
+              className="hidden sm:flex items-center gap-2 bg-navy-800 hover:bg-navy-700 transition-colors text-cream/90 text-sm px-3 py-2 rounded-lg border border-navy-700"
+            >
+              <Users size={16} /> Usuarios
+            </button>
+          )}
           <button
             onClick={onConectar}
             className="hidden sm:flex items-center gap-2 bg-navy-800 hover:bg-navy-700 transition-colors text-cream/90 text-sm px-3 py-2 rounded-lg border border-navy-700"
