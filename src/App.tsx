@@ -17,6 +17,7 @@ import Privacidad from './components/Privacidad';
 import { useAuth } from './hooks/useAuth';
 import { useExpedientes } from './hooks/useExpedientes';
 import { useRolActual } from './hooks/useRolActual';
+import { useNotificacionesCliente } from './hooks/useNotificacionesCliente';
 import { computeStats, isVencimientoUrgente, isCongelado } from './utils/stats';
 import { downloadExpedientesZip } from './utils/export';
 import type { Materia, QuickFilter, TabMode } from './types';
@@ -30,7 +31,7 @@ export default function App() {
 }
 
 function Authenticated() {
-  const { session, loading: authLoading, signIn, signOut, email } = useAuth();
+  const { session, loading: authLoading, signIn, signOut, email, userId } = useAuth();
 
   if (authLoading) {
     return (
@@ -44,16 +45,25 @@ function Authenticated() {
     return <Login onSignIn={async (e, p) => (await signIn(e, p))?.message ?? null} />;
   }
 
-  return <Dashboard userEmail={email ?? ''} onLogout={signOut} />;
+  return <Dashboard userEmail={email ?? ''} userId={userId} onLogout={signOut} />;
 }
 
-function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () => void }) {
+function Dashboard({
+  userEmail,
+  userId,
+  onLogout,
+}: {
+  userEmail: string;
+  userId: string | null;
+  onLogout: () => void;
+}) {
   const {
     expedientes, loading, error, addExpediente, updateExpediente,
     addActuacion, concluirExpediente, eliminarExpediente,
   } = useExpedientes(userEmail);
   const { isAdmin, rol } = useRolActual(userEmail);
   const esCliente = rol === 'cliente';
+  const { marcarVisto, tieneActualizacion } = useNotificacionesCliente(userId, esCliente);
 
   const [search, setSearch] = useState('');
   const [materia, setMateria] = useState<Materia | 'todas'>('todas');
@@ -104,6 +114,11 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
 
   const selected = selectedId ? expedientes.find((e) => e.id === selectedId) ?? null : null;
 
+  const seleccionar = (id: string | null) => {
+    setSelectedId(id);
+    if (id && esCliente) marcarVisto(id);
+  };
+
   return (
     <div className="min-h-screen pb-16">
       <Header
@@ -148,10 +163,15 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
             <div className="lg:flex lg:items-start lg:gap-5">
               <div className={`lg:w-[420px] lg:shrink-0 space-y-5 ${selected ? 'hidden lg:block' : ''}`}>
                 {tab === 'tabla' && (
-                  <ExpedientesTable expedientes={filtered} onSelect={setSelectedId} selectedId={selectedId} />
+                  <ExpedientesTable
+                    expedientes={filtered}
+                    onSelect={seleccionar}
+                    selectedId={selectedId}
+                    tieneActualizacion={esCliente ? tieneActualizacion : undefined}
+                  />
                 )}
-                {tab === 'calendario' && <CalendarioView expedientes={filtered} onSelect={setSelectedId} />}
-                {tab === 'escritos' && <EscritosView expedientes={filtered} onSelect={setSelectedId} />}
+                {tab === 'calendario' && <CalendarioView expedientes={filtered} onSelect={seleccionar} />}
+                {tab === 'escritos' && <EscritosView expedientes={filtered} onSelect={seleccionar} />}
               </div>
 
               <div className={`flex-1 min-w-0 ${selected ? '' : 'hidden lg:block'}`}>
