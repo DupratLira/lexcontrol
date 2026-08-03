@@ -5,15 +5,16 @@ import Badge from './Badge';
 interface Props {
   expedientes: Expediente[];
   onSelect: (id: string) => void;
+  selectedId?: string | null;
 }
 
-export default function ExpedientesTable({ expedientes, onSelect }: Props) {
+export default function ExpedientesTable({ expedientes, onSelect, selectedId }: Props) {
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-navy-900/5">
         <h2 className="font-semibold text-navy-900">Expedientes Registrados ({expedientes.length})</h2>
       </div>
-      <div>
+      <div className="lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
         {expedientes.length === 0 && (
           <div className="px-5 py-10 text-center text-sm text-navy-900/40">
             No se encontraron expedientes con estos filtros.
@@ -23,7 +24,11 @@ export default function ExpedientesTable({ expedientes, onSelect }: Props) {
           <button
             key={exp.id}
             onClick={() => onSelect(exp.id)}
-            className="w-full text-left px-5 py-4 border-b border-navy-900/5 last:border-b-0 hover:bg-navy-900/[0.02] transition-colors flex items-start justify-between gap-4 group"
+            className={`w-full text-left px-5 py-4 border-b last:border-b-0 hover:bg-navy-900/[0.02] transition-colors flex items-start justify-between gap-4 group ${
+              exp.id === selectedId
+                ? 'bg-gold-500/[0.06] border-gold-400/40 ring-1 ring-inset ring-gold-400/40'
+                : 'border-navy-900/5'
+            }`}
           >
             <div className="min-w-0">
               <div className="font-semibold text-navy-900 text-sm sm:text-base leading-snug">

@@ -110,40 +110,56 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
 
         {loading ? (
           <div className="text-center text-sm text-navy-900/40 py-16">Cargando expedientes...</div>
-        ) : selected ? (
-          <ExpedienteDetail
-            expediente={selected}
-            onBack={() => setSelectedId(null)}
-            onUpdate={(patch) => updateExpediente(selected.id, patch).catch((e) => alert('Error al guardar: ' + e.message))}
-            onAddActuacion={(desc) => addActuacion(selected.id, desc)}
-            onConcluir={() => {
-              concluirExpediente(selected.id).catch((e) => alert('Error: ' + e.message));
-              setSelectedId(null);
-            }}
-            onEliminar={() => {
-              eliminarExpediente(selected.id).catch((e) => alert('Error: ' + e.message));
-              setSelectedId(null);
-            }}
-          />
         ) : (
           <>
-            <InstallPrompt />
-            <SearchBar value={search} onChange={setSearch} />
-            <FilterBar
-              activeMateria={materia}
-              onChangeMateria={setMateria}
-              onNuevoExpediente={() => setShowNewModal(true)}
-            />
-            <StatsGrid stats={stats} active={quickFilter} onSelect={setQuickFilter} />
-            <MateriaDistribution stats={stats} />
+            <div className={selected ? 'hidden lg:block space-y-5' : 'space-y-5'}>
+              <InstallPrompt />
+              <SearchBar value={search} onChange={setSearch} />
+              <FilterBar
+                activeMateria={materia}
+                onChangeMateria={setMateria}
+                onNuevoExpediente={() => setShowNewModal(true)}
+              />
+              <StatsGrid stats={stats} active={quickFilter} onSelect={setQuickFilter} />
+              <MateriaDistribution stats={stats} />
+            </div>
 
-            <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className={`flex items-center justify-between flex-wrap gap-3 ${selected ? 'hidden lg:flex' : ''}`}>
               <ViewTabs active={tab} onChange={setTab} />
             </div>
 
-            {tab === 'tabla' && <ExpedientesTable expedientes={filtered} onSelect={setSelectedId} />}
-            {tab === 'calendario' && <CalendarioView expedientes={filtered} onSelect={setSelectedId} />}
-            {tab === 'escritos' && <EscritosView expedientes={filtered} onSelect={setSelectedId} />}
+            <div className="lg:flex lg:items-start lg:gap-5">
+              <div className={`lg:w-[420px] lg:shrink-0 space-y-5 ${selected ? 'hidden lg:block' : ''}`}>
+                {tab === 'tabla' && (
+                  <ExpedientesTable expedientes={filtered} onSelect={setSelectedId} selectedId={selectedId} />
+                )}
+                {tab === 'calendario' && <CalendarioView expedientes={filtered} onSelect={setSelectedId} />}
+                {tab === 'escritos' && <EscritosView expedientes={filtered} onSelect={setSelectedId} />}
+              </div>
+
+              <div className={`flex-1 min-w-0 ${selected ? '' : 'hidden lg:block'}`}>
+                {selected ? (
+                  <ExpedienteDetail
+                    expediente={selected}
+                    onBack={() => setSelectedId(null)}
+                    onUpdate={(patch) => updateExpediente(selected.id, patch).catch((e) => alert('Error al guardar: ' + e.message))}
+                    onAddActuacion={(desc) => addActuacion(selected.id, desc)}
+                    onConcluir={() => {
+                      concluirExpediente(selected.id).catch((e) => alert('Error: ' + e.message));
+                      setSelectedId(null);
+                    }}
+                    onEliminar={() => {
+                      eliminarExpediente(selected.id).catch((e) => alert('Error: ' + e.message));
+                      setSelectedId(null);
+                    }}
+                  />
+                ) : (
+                  <div className="hidden lg:flex items-center justify-center min-h-[400px] bg-white rounded-xl shadow-sm text-navy-900/30 text-sm text-center px-6">
+                    Selecciona un expediente de la lista para ver su detalle aquí.
+                  </div>
+                )}
+              </div>
+            </div>
           </>
         )}
       </main>
