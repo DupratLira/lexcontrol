@@ -1,4 +1,4 @@
-export type Materia = 'Civil' | 'Familiar' | 'Laboral' | 'Administrativa';
+export type Materia = 'Civil' | 'Familiar' | 'Laboral' | 'Administrativa' | 'Conciliaciones Laborales';
 
 export interface Actuacion {
   id: string;
@@ -49,7 +49,7 @@ export interface Expediente {
   bitacora: Actuacion[];
 }
 
-export const MATERIAS: Materia[] = ['Civil', 'Familiar', 'Laboral', 'Administrativa'];
+export const MATERIAS: Materia[] = ['Civil', 'Familiar', 'Laboral', 'Administrativa', 'Conciliaciones Laborales'];
 
 export type ViewMode = 'lista' | 'detalle';
 export type TabMode = 'tabla' | 'calendario' | 'escritos';

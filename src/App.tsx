@@ -140,6 +140,7 @@ function Dashboard({ userEmail, onLogout }: { userEmail: string; onLogout: () =>
               <div className={`flex-1 min-w-0 ${selected ? '' : 'hidden lg:block'}`}>
                 {selected ? (
                   <ExpedienteDetail
+                    key={selected.id}
                     expediente={selected}
                     onBack={() => setSelectedId(null)}
                     onUpdate={(patch) => updateExpediente(selected.id, patch).catch((e) => alert('Error al guardar: ' + e.message))}

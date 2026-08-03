@@ -22,6 +22,7 @@ const MATERIA_STYLE: Record<Materia, string> = {
   Familiar: 'bg-purple-100 text-purple-700',
   Laboral: 'bg-emerald-100 text-emerald-700',
   Administrativa: 'bg-amber-100 text-amber-700',
+  'Conciliaciones Laborales': 'bg-teal-100 text-teal-700',
 };
 
 export default function ExpedienteDetail({

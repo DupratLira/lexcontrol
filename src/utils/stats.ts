@@ -37,6 +37,7 @@ export function computeStats(expedientes: Expediente[]): DashboardStats {
     Familiar: 0,
     Laboral: 0,
     Administrativa: 0,
+    'Conciliaciones Laborales': 0,
   };
   for (const e of activos) porMateria[e.materia]++;
 

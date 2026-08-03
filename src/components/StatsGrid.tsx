@@ -28,7 +28,8 @@ export default function StatsGrid({ stats, active, onSelect }: Props) {
       icon: <Files size={20} />,
       iconBg: 'bg-blue-100 text-blue-600',
       cardBg: 'bg-white',
-      clickable: false,
+      sub: 'Ver todos',
+      clickable: true,
     },
     {
       key: 'amparos',
