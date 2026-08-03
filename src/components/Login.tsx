@@ -21,17 +21,22 @@ export default function Login({ onSignIn }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center bg-navy-800 px-4 py-8 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500/5 rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-navy-400/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+
+      <div className="relative w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-full border-2 border-gold-400 flex items-center justify-center text-gold-500 font-serif font-bold text-xl mb-3">
-            DL
+          <div className="w-20 h-20 rounded-full border-2 border-gold-400 flex items-center justify-center bg-navy-900 shadow-xl mb-4">
+            <span className="font-serif text-2xl font-bold text-gold-400">DL</span>
           </div>
-          <div className="font-serif text-2xl tracking-wide text-navy-900">DUPRAT LIRA</div>
-          <div className="text-[11px] tracking-[0.2em] text-navy-900/50 mt-1">ABOGADOS · CONTROL INTERNO</div>
+          <h1 className="font-serif text-3xl font-bold text-cream uppercase tracking-wide text-center">Duprat Lira</h1>
+          <p className="text-gold-300/80 text-xs font-semibold uppercase tracking-[0.3em] mt-1">Abogados</p>
+          <div className="w-16 h-px bg-gradient-to-r from-transparent via-gold-400 to-transparent mt-3" />
+          <p className="text-navy-200/60 text-[11px] mt-3 font-medium tracking-wide">Control Interno Jurídico</p>
         </div>
 
-        <form onSubmit={submit} className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+        <form onSubmit={submit} className="bg-white rounded-xl shadow-xl p-6 space-y-4">
           {error && <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
 
           <div>
@@ -73,8 +78,11 @@ export default function Login({ onSignIn }: Props) {
           </button>
         </form>
 
-        <p className="text-center text-xs text-navy-900/40 mt-5">
+        <p className="text-center text-xs text-navy-200/50 mt-5">
           Usa el mismo correo y contraseña de tu cuenta de Supabase / LexControl.
+        </p>
+        <p className="text-center text-[11px] text-navy-300/40 mt-2">
+          Insurgentes Sur 300, Roma Norte, CDMX · 55 5160-1668
         </p>
       </div>
     </div>

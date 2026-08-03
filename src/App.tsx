@@ -23,7 +23,7 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-navy-900/40 text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-navy-800 text-cream/40 text-sm">
         Cargando...
       </div>
     );
