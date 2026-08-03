@@ -13,6 +13,7 @@ import EscritosView from './components/EscritosView';
 import InstallPrompt from './components/InstallPrompt';
 import Login from './components/Login';
 import AdminUsuarios from './components/AdminUsuarios';
+import Privacidad from './components/Privacidad';
 import { useAuth } from './hooks/useAuth';
 import { useExpedientes } from './hooks/useExpedientes';
 import { useRolActual } from './hooks/useRolActual';
@@ -21,6 +22,14 @@ import { downloadExpedientesZip } from './utils/export';
 import type { Materia, QuickFilter, TabMode } from './types';
 
 export default function App() {
+  if (window.location.pathname === '/privacidad' || window.location.pathname === '/privacy') {
+    return <Privacidad />;
+  }
+
+  return <Authenticated />;
+}
+
+function Authenticated() {
   const { session, loading: authLoading, signIn, signOut, email } = useAuth();
 
   if (authLoading) {
