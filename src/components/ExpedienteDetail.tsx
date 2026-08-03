@@ -6,6 +6,7 @@ import {
 import type { Expediente, Materia } from '../types';
 import { MATERIAS } from '../types';
 import Toggle from './Toggle';
+import { syncFechaLimiteToCalendar } from '../services/googleCalendar';
 
 interface Props {
   expediente: Expediente;
@@ -29,6 +30,8 @@ export default function ExpedienteDetail({
   const [local, setLocal] = useState(expediente);
   const [nuevaActuacion, setNuevaActuacion] = useState('');
   const [savedFlash, setSavedFlash] = useState(false);
+  const [syncState, setSyncState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const patch = <K extends keyof Expediente>(key: K, value: Expediente[K]) => {
     setLocal((prev) => ({ ...prev, [key]: value }));
@@ -179,20 +182,40 @@ export default function ExpedienteDetail({
           />
           <button
             type="button"
-            onClick={() => {
+            disabled={!local.fechaLimite || syncState === 'loading'}
+            onClick={async () => {
               if (!local.fechaLimite) return;
-              const dt = local.fechaLimite.replace(/-/g, '');
-              const title = encodeURIComponent(`Vencimiento: ${local.numero}`);
-              const details = encodeURIComponent(`${local.actor} vs ${local.demandado} — ${local.proximoARealizar}`);
-              window.open(
-                `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dt}/${dt}&details=${details}`,
-                '_blank'
-              );
+              setSyncState('loading');
+              setSyncError(null);
+              const result = await syncFechaLimiteToCalendar({
+                numero: local.numero,
+                materia: local.materia,
+                juzgado: local.juzgado,
+                actor: local.actor,
+                demandado: local.demandado,
+                proximoARealizar: local.proximoARealizar,
+                fechaLimite: local.fechaLimite,
+              });
+              if (result.success) {
+                setSyncState('success');
+                setTimeout(() => setSyncState('idle'), 2500);
+              } else {
+                setSyncState('error');
+                setSyncError(result.error ?? 'Error desconocido al conectar con Google Calendar.');
+              }
             }}
-            className="w-full flex items-center justify-center gap-2 bg-white border border-blue-200 hover:bg-blue-100/50 text-blue-700 rounded-lg py-2 text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-white border border-blue-200 hover:bg-blue-100/50 disabled:opacity-50 text-blue-700 rounded-lg py-2 text-sm font-medium transition-colors"
           >
-            <CalendarIcon size={14} /> Sincronizar con Google Calendar
+            <CalendarIcon size={14} />
+            {syncState === 'loading'
+              ? 'Sincronizando…'
+              : syncState === 'success'
+              ? 'Evento creado en Google Calendar ✓'
+              : 'Sincronizar con Google Calendar'}
           </button>
+          {syncState === 'error' && syncError && (
+            <p className="text-xs text-red-600">{syncError}</p>
+          )}
         </div>
 
         <div className="space-y-3">
