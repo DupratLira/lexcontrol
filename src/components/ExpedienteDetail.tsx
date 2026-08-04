@@ -34,8 +34,10 @@ export default function ExpedienteDetail({
   const [savedFlash, setSavedFlash] = useState(false);
   const [syncState, setSyncState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncEventUrl, setSyncEventUrl] = useState<string | null>(null);
   const [syncAudienciaState, setSyncAudienciaState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [syncAudienciaError, setSyncAudienciaError] = useState<string | null>(null);
+  const [syncAudienciaEventUrl, setSyncAudienciaEventUrl] = useState<string | null>(null);
 
   const patch = <K extends keyof Expediente>(key: K, value: Expediente[K]) => {
     if (soloLectura) return;
@@ -214,6 +216,7 @@ export default function ExpedienteDetail({
                   if (!local.fechaLimite) return;
                   setSyncState('loading');
                   setSyncError(null);
+                  setSyncEventUrl(null);
                   const result = await syncFechaLimiteToCalendar({
                     numero: local.numero,
                     materia: local.materia,
@@ -225,7 +228,7 @@ export default function ExpedienteDetail({
                   });
                   if (result.success) {
                     setSyncState('success');
-                    setTimeout(() => setSyncState('idle'), 2500);
+                    setSyncEventUrl(result.eventUrl ?? null);
                   } else {
                     setSyncState('error');
                     setSyncError(result.error ?? 'Error desconocido al conectar con Google Calendar.');
@@ -240,6 +243,16 @@ export default function ExpedienteDetail({
                   ? 'Evento creado en Google Calendar ✓'
                   : 'Sincronizar con Google Calendar'}
               </button>
+              {syncState === 'success' && syncEventUrl && (
+                <a
+                  href={syncEventUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-center text-xs text-blue-600 underline hover:text-blue-800"
+                >
+                  Ver evento en Google Calendar
+                </a>
+              )}
               {syncState === 'error' && syncError && (
                 <p className="text-xs text-red-600">{syncError}</p>
               )}
@@ -280,6 +293,7 @@ export default function ExpedienteDetail({
                       if (!local.audienciaFecha || !local.audienciaHora) return;
                       setSyncAudienciaState('loading');
                       setSyncAudienciaError(null);
+                      setSyncAudienciaEventUrl(null);
                       const result = await syncAudienciaToCalendar({
                         numero: local.numero,
                         materia: local.materia,
@@ -291,7 +305,7 @@ export default function ExpedienteDetail({
                       });
                       if (result.success) {
                         setSyncAudienciaState('success');
-                        setTimeout(() => setSyncAudienciaState('idle'), 2500);
+                        setSyncAudienciaEventUrl(result.eventUrl ?? null);
                       } else {
                         setSyncAudienciaState('error');
                         setSyncAudienciaError(result.error ?? 'Error desconocido al conectar con Google Calendar.');
@@ -306,6 +320,16 @@ export default function ExpedienteDetail({
                       ? 'Evento creado en Google Calendar ✓'
                       : 'Sincronizar con Google Calendar'}
                   </button>
+                  {syncAudienciaState === 'success' && syncAudienciaEventUrl && (
+                    <a
+                      href={syncAudienciaEventUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center text-xs text-rose-600 underline hover:text-rose-800"
+                    >
+                      Ver evento en Google Calendar
+                    </a>
+                  )}
                   {syncAudienciaState === 'error' && syncAudienciaError && (
                     <p className="text-xs text-red-600">{syncAudienciaError}</p>
                   )}
