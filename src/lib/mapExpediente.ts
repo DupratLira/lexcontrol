@@ -9,6 +9,7 @@ export const EXPEDIENTE_COLUMNS = [
   'amparo_juzgado', 'amparo_tipo', 'es_apelacion', 'apelacion_sala',
   'apelacion_toca', 'apelacion_tipo', 'es_escrito_pendiente', 'escrito_tipo',
   'escrito_fecha_limite', 'created_by_email', 'updated_by_email', 'updated_at',
+  'es_audiencia', 'audiencia_fecha', 'audiencia_hora',
 ].join(',');
 
 // La columna `concluido` es opcional: solo existe si se corrió la migración
@@ -44,6 +45,9 @@ export interface ExpedienteRow {
   created_by_email: string | null;
   updated_by_email: string | null;
   updated_at: string;
+  es_audiencia: boolean | null;
+  audiencia_fecha: string | null;
+  audiencia_hora: string | null;
   concluido?: boolean | null;
 }
 
@@ -78,6 +82,10 @@ export function rowToExpediente(row: ExpedienteRow): Expediente {
     apelacionSala: row.apelacion_sala,
     apelacionToca: row.apelacion_toca,
     apelacionTipo: row.apelacion_tipo,
+
+    tieneAudiencia: !!row.es_audiencia,
+    audienciaFecha: row.audiencia_fecha,
+    audienciaHora: row.audiencia_hora,
 
     concluido: !!row.concluido,
 
@@ -114,6 +122,9 @@ export interface ExpedienteWritePayload {
   es_escrito_pendiente?: boolean;
   escrito_tipo?: string | null;
   escrito_fecha_limite?: string | null;
+  es_audiencia?: boolean;
+  audiencia_fecha?: string | null;
+  audiencia_hora?: string | null;
   updated_by_email?: string | null;
   created_by_email?: string | null;
   concluido?: boolean;
@@ -144,6 +155,9 @@ export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePa
   if (patch.escritoPendiente !== undefined) out.es_escrito_pendiente = patch.escritoPendiente;
   if (patch.escritoTipo !== undefined) out.escrito_tipo = patch.escritoTipo;
   if (patch.escritoFechaLimite !== undefined) out.escrito_fecha_limite = patch.escritoFechaLimite;
+  if (patch.tieneAudiencia !== undefined) out.es_audiencia = patch.tieneAudiencia;
+  if (patch.audienciaFecha !== undefined) out.audiencia_fecha = patch.audienciaFecha;
+  if (patch.audienciaHora !== undefined) out.audiencia_hora = patch.audienciaHora;
   if (patch.concluido !== undefined) out.concluido = patch.concluido;
   return out;
 }

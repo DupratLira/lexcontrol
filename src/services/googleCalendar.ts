@@ -194,3 +194,67 @@ export async function syncFechaLimiteToCalendar(params: {
     };
   }
 }
+
+export async function syncAudienciaToCalendar(params: {
+  numero: string;
+  materia: string;
+  juzgado: string;
+  actor: string;
+  demandado: string;
+  audienciaFecha: string;
+  audienciaHora: string;
+}): Promise<CalendarSyncResult> {
+  try {
+    const accessToken = await getAccessToken();
+
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Mexico_City';
+    const inicio = new Date(`${params.audienciaFecha}T${params.audienciaHora}:00`);
+    const fin = new Date(inicio.getTime() + 60 * 60 * 1000);
+
+    const eventPayload = {
+      summary: `Audiencia: ${params.numero} — ${params.actor} vs ${params.demandado}`,
+      description: [
+        `Expediente: ${params.numero}`,
+        `Materia: ${params.materia}`,
+        `Juzgado: ${params.juzgado}`,
+        `Actor: ${params.actor}`,
+        `Demandado: ${params.demandado}`,
+      ].join('\n'),
+      start: { dateTime: inicio.toISOString(), timeZone },
+      end: { dateTime: fin.toISOString(), timeZone },
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'popup', minutes: 24 * 60 },
+          { method: 'popup', minutes: 60 },
+        ],
+      },
+    };
+
+    const response = await fetch(`${CALENDAR_API_BASE}/calendars/primary/events`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventPayload),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) disconnectGoogleCalendar();
+      const errBody = await response.json().catch(() => null);
+      return {
+        success: false,
+        error: errBody?.error?.message || `Error HTTP ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+    return { success: true, eventUrl: data.htmlLink };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Error desconocido al crear el evento.',
+    };
+  }
+}

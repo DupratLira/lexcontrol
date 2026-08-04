@@ -39,6 +39,10 @@ export interface Expediente {
   apelacionToca: string | null;
   apelacionTipo: string | null;
 
+  tieneAudiencia: boolean;
+  audienciaFecha: string | null;
+  audienciaHora: string | null;
+
   concluido: boolean;
 
   creadoPor: string | null;

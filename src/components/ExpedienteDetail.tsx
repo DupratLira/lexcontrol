@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
   ArrowLeft, Calendar as CalendarIcon, CheckCircle2, Clock, FileText,
-  Gavel, Plus, Save, Scale, Trash2,
+  Gavel, Plus, Save, Scale, Trash2, Users,
 } from 'lucide-react';
 import type { Expediente, Materia } from '../types';
 import { MATERIAS } from '../types';
 import Toggle from './Toggle';
-import { syncFechaLimiteToCalendar } from '../services/googleCalendar';
+import { syncFechaLimiteToCalendar, syncAudienciaToCalendar } from '../services/googleCalendar';
 
 interface Props {
   expediente: Expediente;
@@ -34,6 +34,8 @@ export default function ExpedienteDetail({
   const [savedFlash, setSavedFlash] = useState(false);
   const [syncState, setSyncState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncAudienciaState, setSyncAudienciaState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [syncAudienciaError, setSyncAudienciaError] = useState<string | null>(null);
 
   const patch = <K extends keyof Expediente>(key: K, value: Expediente[K]) => {
     if (soloLectura) return;
@@ -203,41 +205,113 @@ export default function ExpedienteDetail({
             onChange={(e) => patch('fechaLimite', e.target.value || null)}
             className="w-full bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
           />
-          <button
-            type="button"
-            disabled={!local.fechaLimite || syncState === 'loading'}
-            onClick={async () => {
-              if (!local.fechaLimite) return;
-              setSyncState('loading');
-              setSyncError(null);
-              const result = await syncFechaLimiteToCalendar({
-                numero: local.numero,
-                materia: local.materia,
-                juzgado: local.juzgado,
-                actor: local.actor,
-                demandado: local.demandado,
-                proximoARealizar: local.proximoARealizar,
-                fechaLimite: local.fechaLimite,
-              });
-              if (result.success) {
-                setSyncState('success');
-                setTimeout(() => setSyncState('idle'), 2500);
-              } else {
-                setSyncState('error');
-                setSyncError(result.error ?? 'Error desconocido al conectar con Google Calendar.');
-              }
-            }}
-            className="w-full flex items-center justify-center gap-2 bg-white border border-blue-200 hover:bg-blue-100/50 disabled:opacity-50 text-blue-700 rounded-lg py-2 text-sm font-medium transition-colors"
-          >
-            <CalendarIcon size={14} />
-            {syncState === 'loading'
-              ? 'Sincronizando…'
-              : syncState === 'success'
-              ? 'Evento creado en Google Calendar ✓'
-              : 'Sincronizar con Google Calendar'}
-          </button>
-          {syncState === 'error' && syncError && (
-            <p className="text-xs text-red-600">{syncError}</p>
+          {!soloLectura && (
+            <>
+              <button
+                type="button"
+                disabled={!local.fechaLimite || syncState === 'loading'}
+                onClick={async () => {
+                  if (!local.fechaLimite) return;
+                  setSyncState('loading');
+                  setSyncError(null);
+                  const result = await syncFechaLimiteToCalendar({
+                    numero: local.numero,
+                    materia: local.materia,
+                    juzgado: local.juzgado,
+                    actor: local.actor,
+                    demandado: local.demandado,
+                    proximoARealizar: local.proximoARealizar,
+                    fechaLimite: local.fechaLimite,
+                  });
+                  if (result.success) {
+                    setSyncState('success');
+                    setTimeout(() => setSyncState('idle'), 2500);
+                  } else {
+                    setSyncState('error');
+                    setSyncError(result.error ?? 'Error desconocido al conectar con Google Calendar.');
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-blue-200 hover:bg-blue-100/50 disabled:opacity-50 text-blue-700 rounded-lg py-2 text-sm font-medium transition-colors"
+              >
+                <CalendarIcon size={14} />
+                {syncState === 'loading'
+                  ? 'Sincronizando…'
+                  : syncState === 'success'
+                  ? 'Evento creado en Google Calendar ✓'
+                  : 'Sincronizar con Google Calendar'}
+              </button>
+              {syncState === 'error' && syncError && (
+                <p className="text-xs text-red-600">{syncError}</p>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="bg-rose-50 rounded-lg p-4 border border-rose-100 space-y-3">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <Toggle checked={local.tieneAudiencia} disabled={soloLectura} onChange={(v) => patch('tieneAudiencia', v)} />
+            <Users size={16} className="text-rose-600" />
+            <span className="text-sm font-medium text-rose-800">¿Este asunto tiene Audiencia?</span>
+          </label>
+          {local.tieneAudiencia && (
+            <>
+              <div className="grid sm:grid-cols-2 gap-3 pl-9">
+                <input
+                  type="date"
+                  value={local.audienciaFecha ?? ''}
+                  disabled={soloLectura}
+                  onChange={(e) => patch('audienciaFecha', e.target.value || null)}
+                  className="border border-rose-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
+                />
+                <input
+                  type="time"
+                  value={local.audienciaHora ?? ''}
+                  disabled={soloLectura}
+                  onChange={(e) => patch('audienciaHora', e.target.value || null)}
+                  className="border border-rose-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
+                />
+              </div>
+              {!soloLectura && (
+                <div className="pl-9 space-y-2">
+                  <button
+                    type="button"
+                    disabled={!local.audienciaFecha || !local.audienciaHora || syncAudienciaState === 'loading'}
+                    onClick={async () => {
+                      if (!local.audienciaFecha || !local.audienciaHora) return;
+                      setSyncAudienciaState('loading');
+                      setSyncAudienciaError(null);
+                      const result = await syncAudienciaToCalendar({
+                        numero: local.numero,
+                        materia: local.materia,
+                        juzgado: local.juzgado,
+                        actor: local.actor,
+                        demandado: local.demandado,
+                        audienciaFecha: local.audienciaFecha,
+                        audienciaHora: local.audienciaHora,
+                      });
+                      if (result.success) {
+                        setSyncAudienciaState('success');
+                        setTimeout(() => setSyncAudienciaState('idle'), 2500);
+                      } else {
+                        setSyncAudienciaState('error');
+                        setSyncAudienciaError(result.error ?? 'Error desconocido al conectar con Google Calendar.');
+                      }
+                    }}
+                    className="w-full flex items-center justify-center gap-2 bg-white border border-rose-200 hover:bg-rose-100/50 disabled:opacity-50 text-rose-700 rounded-lg py-2 text-sm font-medium transition-colors"
+                  >
+                    <CalendarIcon size={14} />
+                    {syncAudienciaState === 'loading'
+                      ? 'Sincronizando…'
+                      : syncAudienciaState === 'success'
+                      ? 'Evento creado en Google Calendar ✓'
+                      : 'Sincronizar con Google Calendar'}
+                  </button>
+                  {syncAudienciaState === 'error' && syncAudienciaError && (
+                    <p className="text-xs text-red-600">{syncAudienciaError}</p>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
 
