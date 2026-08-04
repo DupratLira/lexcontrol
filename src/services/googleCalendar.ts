@@ -2,6 +2,13 @@ const CALENDAR_API_BASE = 'https://www.googleapis.com/calendar/v3';
 const SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 const TOKEN_KEY = 'lexcontrol_gcal_token';
 
+// Agenda compartida del despacho: todos los eventos que crea LexControl
+// (fecha limite y audiencia) se guardan aqui, no en el calendario personal
+// de quien sincroniza, para que todo el equipo vea la misma agenda.
+const CALENDAR_ID =
+  (import.meta.env.VITE_GOOGLE_CALENDAR_ID as string | undefined) ||
+  'ed6cc7cbe28f99d7c2fdc873236d4c38b400b79915479c3da92241dc6a8b6c58@group.calendar.google.com';
+
 interface StoredToken {
   access_token: string;
   expires_at: number;
@@ -167,7 +174,7 @@ export async function syncFechaLimiteToCalendar(params: {
       },
     };
 
-    const response = await fetch(`${CALENDAR_API_BASE}/calendars/primary/events`, {
+    const response = await fetch(`${CALENDAR_API_BASE}/calendars/${encodeURIComponent(CALENDAR_ID)}/events`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -231,7 +238,7 @@ export async function syncAudienciaToCalendar(params: {
       },
     };
 
-    const response = await fetch(`${CALENDAR_API_BASE}/calendars/primary/events`, {
+    const response = await fetch(`${CALENDAR_API_BASE}/calendars/${encodeURIComponent(CALENDAR_ID)}/events`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
