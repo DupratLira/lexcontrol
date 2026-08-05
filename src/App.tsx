@@ -9,6 +9,7 @@ import ExpedientesTable from './components/ExpedientesTable';
 import ExpedienteDetail from './components/ExpedienteDetail';
 import NewExpedienteModal from './components/NewExpedienteModal';
 import CalendarioView from './components/CalendarioView';
+import AudienciasView from './components/AudienciasView';
 import EscritosView from './components/EscritosView';
 import InstallPrompt from './components/InstallPrompt';
 import Login from './components/Login';
@@ -172,6 +173,7 @@ function Dashboard({
                   />
                 )}
                 {tab === 'calendario' && <CalendarioView expedientes={filtered} onSelect={seleccionar} />}
+                {tab === 'audiencias' && <AudienciasView expedientes={filtered} onSelect={seleccionar} />}
                 {tab === 'escritos' && <EscritosView expedientes={filtered} onSelect={seleccionar} />}
               </div>
 

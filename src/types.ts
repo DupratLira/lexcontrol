@@ -56,6 +56,6 @@ export interface Expediente {
 export const MATERIAS: Materia[] = ['Civil', 'Familiar', 'Laboral', 'Administrativa', 'Conciliaciones Laborales'];
 
 export type ViewMode = 'lista' | 'detalle';
-export type TabMode = 'tabla' | 'calendario' | 'escritos';
+export type TabMode = 'tabla' | 'calendario' | 'escritos' | 'audiencias';
 
 export type QuickFilter = 'todas' | 'amparos' | 'apelaciones' | 'escritos' | 'urgentes' | 'congelados';

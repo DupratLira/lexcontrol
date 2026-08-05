@@ -1,4 +1,4 @@
-import { Calendar, LayoutGrid, FileText } from 'lucide-react';
+import { Calendar, LayoutGrid, FileText, Users } from 'lucide-react';
 import type { TabMode } from '../types';
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 const TABS: { key: TabMode; label: string; icon: React.ReactNode }[] = [
   { key: 'tabla', label: 'Tabla', icon: <LayoutGrid size={15} /> },
   { key: 'calendario', label: 'Calendario', icon: <Calendar size={15} /> },
+  { key: 'audiencias', label: 'Audiencias', icon: <Users size={15} /> },
   { key: 'escritos', label: 'Escritos', icon: <FileText size={15} /> },
 ];
 
