@@ -4,9 +4,13 @@ import {
   EXPEDIENTE_COLUMNS_WITH_CONCLUIDO,
   expedienteToPatch,
   rowToExpediente,
+  rowToAmparo,
+  rowToApelacion,
   type ExpedienteRow,
+  type AmparoRow,
+  type ApelacionRow,
 } from '../lib/mapExpediente';
-import type { Actuacion, Expediente } from '../types';
+import type { Actuacion, Amparo, Apelacion, Expediente, TipoAmparo } from '../types';
 
 // Si la migracion opcional (supabase-migration.sql) no se ha corrido, la
 // columna `concluido` no existe todavia: en ese caso reintentamos sin ella
@@ -70,6 +74,40 @@ export function useExpedientes(userEmail: string | null) {
         }
       }
 
+      const { data: amparoRows, error: amparoErr } = await supabase
+        .from('amparos')
+        .select('id, expediente_id, numero, juzgado, tipo, created_at')
+        .order('created_at', { ascending: false });
+
+      if (!amparoErr && amparoRows) {
+        const byExpediente = new Map<string, Amparo[]>();
+        for (const row of amparoRows as AmparoRow[]) {
+          const list = byExpediente.get(row.expediente_id) ?? [];
+          list.push(rowToAmparo(row));
+          byExpediente.set(row.expediente_id, list);
+        }
+        for (const exp of base) {
+          exp.amparos = byExpediente.get(exp.id) ?? [];
+        }
+      }
+
+      const { data: apelacionRows, error: apelacionErr } = await supabase
+        .from('apelaciones')
+        .select('id, expediente_id, sala, toca, tipo, created_at')
+        .order('created_at', { ascending: false });
+
+      if (!apelacionErr && apelacionRows) {
+        const byExpediente = new Map<string, Apelacion[]>();
+        for (const row of apelacionRows as ApelacionRow[]) {
+          const list = byExpediente.get(row.expediente_id) ?? [];
+          list.push(rowToApelacion(row));
+          byExpediente.set(row.expediente_id, list);
+        }
+        for (const exp of base) {
+          exp.apelaciones = byExpediente.get(exp.id) ?? [];
+        }
+      }
+
       setExpedientes(base);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al cargar expedientes');
@@ -83,6 +121,12 @@ export function useExpedientes(userEmail: string | null) {
     const channel = supabase
       .channel('expedientes-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'expedientes' }, () => {
+        load();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'amparos' }, () => {
+        load();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'apelaciones' }, () => {
         load();
       })
       .subscribe();
@@ -169,6 +213,54 @@ export function useExpedientes(userEmail: string | null) {
     [userEmail, load]
   );
 
+  const addAmparo = useCallback(
+    async (expedienteId: string, datos: { numero: string; juzgado: string; tipo: TipoAmparo }) => {
+      const { error: err } = await supabase.from('amparos').insert({
+        expediente_id: expedienteId,
+        numero: datos.numero || null,
+        juzgado: datos.juzgado || null,
+        tipo: datos.tipo,
+        created_by_email: userEmail,
+      });
+      if (err) throw err;
+      await load();
+    },
+    [userEmail, load]
+  );
+
+  const eliminarAmparo = useCallback(
+    async (amparoId: string) => {
+      const { error: err } = await supabase.from('amparos').delete().eq('id', amparoId);
+      if (err) throw err;
+      await load();
+    },
+    [load]
+  );
+
+  const addApelacion = useCallback(
+    async (expedienteId: string, datos: { sala: string; toca: string; tipo: string }) => {
+      const { error: err } = await supabase.from('apelaciones').insert({
+        expediente_id: expedienteId,
+        sala: datos.sala || null,
+        toca: datos.toca || null,
+        tipo: datos.tipo || null,
+        created_by_email: userEmail,
+      });
+      if (err) throw err;
+      await load();
+    },
+    [userEmail, load]
+  );
+
+  const eliminarApelacion = useCallback(
+    async (apelacionId: string) => {
+      const { error: err } = await supabase.from('apelaciones').delete().eq('id', apelacionId);
+      if (err) throw err;
+      await load();
+    },
+    [load]
+  );
+
   return {
     expedientes,
     loading,
@@ -177,6 +269,10 @@ export function useExpedientes(userEmail: string | null) {
     addExpediente,
     updateExpediente,
     addActuacion,
+    addAmparo,
+    eliminarAmparo,
+    addApelacion,
+    eliminarApelacion,
     concluirExpediente,
     eliminarExpediente,
   };

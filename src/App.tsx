@@ -61,6 +61,7 @@ function Dashboard({
   const {
     expedientes, loading, error, addExpediente, updateExpediente,
     addActuacion, concluirExpediente, eliminarExpediente,
+    addAmparo, eliminarAmparo, addApelacion, eliminarApelacion,
   } = useExpedientes(userEmail);
   const { isAdmin, rol } = useRolActual(userEmail);
   const esCliente = rol === 'cliente';
@@ -83,10 +84,10 @@ function Dashboard({
 
     switch (quickFilter) {
       case 'amparos':
-        list = list.filter((e) => e.enAmparo);
+        list = list.filter((e) => e.amparos.length > 0);
         break;
       case 'apelaciones':
-        list = list.filter((e) => e.enApelacion);
+        list = list.filter((e) => e.apelaciones.length > 0);
         break;
       case 'escritos':
         list = list.filter((e) => e.escritoPendiente);
@@ -186,6 +187,10 @@ function Dashboard({
                     onBack={() => setSelectedId(null)}
                     onUpdate={(patch) => updateExpediente(selected.id, patch).catch((e) => alert('Error al guardar: ' + e.message))}
                     onAddActuacion={(desc) => addActuacion(selected.id, desc)}
+                    onAddAmparo={(datos) => addAmparo(selected.id, datos).catch((e) => alert('Error al guardar: ' + e.message))}
+                    onEliminarAmparo={(amparoId) => eliminarAmparo(amparoId).catch((e) => alert('Error: ' + e.message))}
+                    onAddApelacion={(datos) => addApelacion(selected.id, datos).catch((e) => alert('Error al guardar: ' + e.message))}
+                    onEliminarApelacion={(apelacionId) => eliminarApelacion(apelacionId).catch((e) => alert('Error: ' + e.message))}
                     onConcluir={() => {
                       concluirExpediente(selected.id).catch((e) => alert('Error: ' + e.message));
                       setSelectedId(null);

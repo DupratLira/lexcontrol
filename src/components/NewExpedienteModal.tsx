@@ -19,8 +19,6 @@ export default function NewExpedienteModal({ onClose, onCreate }: Props) {
   const [cliente, setCliente] = useState('Despacho');
   const [fechaLimite, setFechaLimite] = useState('');
   const [escritoPendiente, setEscritoPendiente] = useState(false);
-  const [enAmparo, setEnAmparo] = useState(false);
-  const [enApelacion, setEnApelacion] = useState(false);
   const [error, setError] = useState('');
 
   const submit = () => {
@@ -40,9 +38,6 @@ export default function NewExpedienteModal({ onClose, onCreate }: Props) {
       proximoARealizar: '',
       fechaLimite: fechaLimite || null,
       escritoPendiente,
-      enAmparo,
-      tipoAmparo: enAmparo ? 'Directo' : null,
-      enApelacion,
     });
     onClose();
   };
@@ -139,15 +134,10 @@ export default function NewExpedienteModal({ onClose, onCreate }: Props) {
               <Toggle checked={escritoPendiente} onChange={setEscritoPendiente} />
               <span className="text-sm text-navy-900/80">¿Hay escrito próximo por realizar?</span>
             </label>
-            <label className="flex items-center gap-3 py-3 cursor-pointer">
-              <Toggle checked={enAmparo} onChange={setEnAmparo} />
-              <span className="text-sm text-navy-900/80">¿Este asunto se encuentra en Amparo?</span>
-            </label>
-            <label className="flex items-center gap-3 py-3 cursor-pointer">
-              <Toggle checked={enApelacion} onChange={setEnApelacion} />
-              <span className="text-sm text-navy-900/80">¿Este asunto está en Apelación?</span>
-            </label>
           </div>
+          <p className="text-xs text-navy-900/40 italic">
+            Los amparos, apelaciones y audiencias se agregan después, desde el detalle del expediente.
+          </p>
         </div>
 
         <div className="flex justify-end gap-3 px-5 py-4 border-t border-navy-900/5 sticky bottom-0 bg-white rounded-b-xl">

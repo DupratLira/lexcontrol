@@ -12,13 +12,15 @@ export function expedientesToCsv(expedientes: Expediente[]): string {
   const headers = [
     'Materia', 'Numero', 'Juzgado', 'Ciudad', 'Tipo de Juicio', 'Actor', 'Demandado',
     'Cliente', 'Situacion Actual', 'Proximo a Realizar', 'Fecha Limite',
-    'Escrito Pendiente', 'En Amparo', 'Tipo Amparo', 'En Apelacion', 'Concluido',
+    'Escrito Pendiente', 'Amparos', 'Apelaciones', 'Concluido',
   ];
   const rows = expedientes.map((e) => [
     e.materia, e.numero, e.juzgado, e.ciudad, e.tipoJuicio, e.actor, e.demandado,
     e.cliente, e.situacionActual, e.proximoARealizar, e.fechaLimite ?? '',
-    e.escritoPendiente ? 'Si' : 'No', e.enAmparo ? 'Si' : 'No', e.tipoAmparo ?? '',
-    e.enApelacion ? 'Si' : 'No', e.concluido ? 'Si' : 'No',
+    e.escritoPendiente ? 'Si' : 'No',
+    e.amparos.length > 0 ? e.amparos.map((a) => `${a.tipo ?? ''} ${a.numero ?? ''}`.trim()).join('; ') : 'No',
+    e.apelaciones.length > 0 ? e.apelaciones.map((a) => `${a.sala ?? ''} ${a.toca ?? ''}`.trim()).join('; ') : 'No',
+    e.concluido ? 'Si' : 'No',
   ]);
   const lines = [headers, ...rows].map((r) => r.map((c) => csvEscape(String(c))).join(','));
   return '﻿' + lines.join('\n');

@@ -3,7 +3,7 @@ import {
   ArrowLeft, Calendar as CalendarIcon, CheckCircle2, Clock, FileText,
   Gavel, Plus, Save, Scale, Trash2, Users,
 } from 'lucide-react';
-import type { Expediente, Materia } from '../types';
+import type { Expediente, Materia, TipoAmparo } from '../types';
 import { MATERIAS } from '../types';
 import Toggle from './Toggle';
 import { syncFechaLimiteToCalendar, syncAudienciaToCalendar } from '../services/googleCalendar';
@@ -13,6 +13,10 @@ interface Props {
   onBack: () => void;
   onUpdate: (patch: Partial<Expediente>) => void;
   onAddActuacion: (descripcion: string) => void;
+  onAddAmparo: (datos: { numero: string; juzgado: string; tipo: TipoAmparo }) => void;
+  onEliminarAmparo: (amparoId: string) => void;
+  onAddApelacion: (datos: { sala: string; toca: string; tipo: string }) => void;
+  onEliminarApelacion: (apelacionId: string) => void;
   onConcluir: () => void;
   onEliminar: () => void;
   soloLectura?: boolean;
@@ -27,10 +31,18 @@ const MATERIA_STYLE: Record<Materia, string> = {
 };
 
 export default function ExpedienteDetail({
-  expediente, onBack, onUpdate, onAddActuacion, onConcluir, onEliminar, soloLectura,
+  expediente, onBack, onUpdate, onAddActuacion,
+  onAddAmparo, onEliminarAmparo, onAddApelacion, onEliminarApelacion,
+  onConcluir, onEliminar, soloLectura,
 }: Props) {
   const [local, setLocal] = useState(expediente);
   const [nuevaActuacion, setNuevaActuacion] = useState('');
+  const [nuevoAmparoNumero, setNuevoAmparoNumero] = useState('');
+  const [nuevoAmparoJuzgado, setNuevoAmparoJuzgado] = useState('');
+  const [nuevoAmparoTipo, setNuevoAmparoTipo] = useState<TipoAmparo>('Directo');
+  const [nuevaApelacionSala, setNuevaApelacionSala] = useState('');
+  const [nuevaApelacionToca, setNuevaApelacionToca] = useState('');
+  const [nuevaApelacionTipo, setNuevaApelacionTipo] = useState('');
   const [savedFlash, setSavedFlash] = useState(false);
   const [syncState, setSyncState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -340,69 +352,129 @@ export default function ExpedienteDetail({
         </div>
 
         <div className="space-y-3">
-          <label className="flex items-center gap-3 py-2 cursor-pointer">
-            <Toggle checked={local.enAmparo} disabled={soloLectura} onChange={(v) => patch('enAmparo', v)} />
-            <Scale size={16} className="text-red-500" />
-            <span className="text-sm font-medium text-navy-900/80">¿Este asunto se encuentra en Amparo?</span>
-            {local.enAmparo && (
+          <div className="flex items-center gap-2 text-[11px] font-semibold tracking-wide text-navy-900/50">
+            <Scale size={13} className="text-red-500" /> AMPAROS
+          </div>
+          {expediente.amparos.length === 0 ? (
+            <p className="text-sm text-navy-900/40 italic">Sin amparos registrados.</p>
+          ) : (
+            <ul className="space-y-2">
+              {expediente.amparos.map((a) => (
+                <li key={a.id} className="text-sm bg-red-50 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+                  <div className="text-navy-900/80">
+                    <span className="font-medium">{a.tipo ?? 'Amparo'}</span>
+                    {a.numero && <> — {a.numero}</>}
+                    {a.juzgado && <span className="text-navy-900/50"> ({a.juzgado})</span>}
+                  </div>
+                  {!soloLectura && (
+                    <button
+                      onClick={() => {
+                        if (confirm('¿Eliminar este amparo?')) onEliminarAmparo(a.id);
+                      }}
+                      className="text-red-500 hover:text-red-700 shrink-0"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {!soloLectura && (
+            <div className="grid sm:grid-cols-[1fr_1fr_auto_auto] gap-2">
+              <input
+                value={nuevoAmparoNumero}
+                onChange={(e) => setNuevoAmparoNumero(e.target.value)}
+                placeholder="Número de amparo"
+                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+              />
+              <input
+                value={nuevoAmparoJuzgado}
+                onChange={(e) => setNuevoAmparoJuzgado(e.target.value)}
+                placeholder="Juzgado / Tribunal"
+                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+              />
               <select
-                value={local.tipoAmparo ?? 'Directo'}
-                disabled={soloLectura}
-                onChange={(e) => patch('tipoAmparo', e.target.value)}
-                className="ml-auto text-xs border border-navy-900/10 rounded-lg px-2 py-1 disabled:opacity-80"
-                onClick={(e) => e.stopPropagation()}
+                value={nuevoAmparoTipo}
+                onChange={(e) => setNuevoAmparoTipo(e.target.value as TipoAmparo)}
+                className="border border-navy-900/10 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
               >
                 <option value="Directo">Directo</option>
                 <option value="Indirecto">Indirecto</option>
               </select>
-            )}
-          </label>
-          {local.enAmparo && (
-            <div className="grid sm:grid-cols-2 gap-3 pl-9 -mt-1">
-              <input
-                value={local.amparoNumero ?? ''}
-                disabled={soloLectura}
-                onChange={(e) => patch('amparoNumero', e.target.value || null)}
-                placeholder="Número de amparo"
-                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
-              />
-              <input
-                value={local.amparoJuzgado ?? ''}
-                disabled={soloLectura}
-                onChange={(e) => patch('amparoJuzgado', e.target.value || null)}
-                placeholder="Juzgado / Tribunal de amparo"
-                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
-              />
+              <button
+                onClick={() => {
+                  onAddAmparo({ numero: nuevoAmparoNumero.trim(), juzgado: nuevoAmparoJuzgado.trim(), tipo: nuevoAmparoTipo });
+                  setNuevoAmparoNumero('');
+                  setNuevoAmparoJuzgado('');
+                  setNuevoAmparoTipo('Directo');
+                }}
+                className="flex items-center gap-1.5 bg-navy-900 text-cream px-3 py-2 rounded-lg text-sm font-medium"
+              >
+                <Plus size={14} /> Agregar
+              </button>
             </div>
           )}
-          <label className="flex items-center gap-3 py-2 cursor-pointer">
-            <Toggle checked={local.enApelacion} disabled={soloLectura} onChange={(v) => patch('enApelacion', v)} />
-            <Gavel size={16} className="text-emerald-600" />
-            <span className="text-sm font-medium text-navy-900/80">¿Este asunto está en Apelación?</span>
-          </label>
-          {local.enApelacion && (
-            <div className="grid sm:grid-cols-3 gap-3 pl-9 -mt-1">
+
+          <div className="flex items-center gap-2 text-[11px] font-semibold tracking-wide text-navy-900/50 pt-2">
+            <Gavel size={13} className="text-emerald-600" /> APELACIONES
+          </div>
+          {expediente.apelaciones.length === 0 ? (
+            <p className="text-sm text-navy-900/40 italic">Sin apelaciones registradas.</p>
+          ) : (
+            <ul className="space-y-2">
+              {expediente.apelaciones.map((a) => (
+                <li key={a.id} className="text-sm bg-emerald-50 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+                  <div className="text-navy-900/80">
+                    {a.sala && <span className="font-medium">{a.sala}</span>}
+                    {a.toca && <> — Toca {a.toca}</>}
+                    {a.tipo && <span className="text-navy-900/50"> ({a.tipo})</span>}
+                  </div>
+                  {!soloLectura && (
+                    <button
+                      onClick={() => {
+                        if (confirm('¿Eliminar esta apelación?')) onEliminarApelacion(a.id);
+                      }}
+                      className="text-red-500 hover:text-red-700 shrink-0"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {!soloLectura && (
+            <div className="grid sm:grid-cols-[1fr_1fr_1fr_auto] gap-2">
               <input
-                value={local.apelacionSala ?? ''}
-                disabled={soloLectura}
-                onChange={(e) => patch('apelacionSala', e.target.value || null)}
+                value={nuevaApelacionSala}
+                onChange={(e) => setNuevaApelacionSala(e.target.value)}
                 placeholder="Sala"
-                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
+                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
               />
               <input
-                value={local.apelacionToca ?? ''}
-                disabled={soloLectura}
-                onChange={(e) => patch('apelacionToca', e.target.value || null)}
+                value={nuevaApelacionToca}
+                onChange={(e) => setNuevaApelacionToca(e.target.value)}
                 placeholder="Toca"
-                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
+                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
               />
               <input
-                value={local.apelacionTipo ?? ''}
-                disabled={soloLectura}
-                onChange={(e) => patch('apelacionTipo', e.target.value || null)}
+                value={nuevaApelacionTipo}
+                onChange={(e) => setNuevaApelacionTipo(e.target.value)}
                 placeholder="Tipo de apelación"
-                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
+                className="border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
               />
+              <button
+                onClick={() => {
+                  onAddApelacion({ sala: nuevaApelacionSala.trim(), toca: nuevaApelacionToca.trim(), tipo: nuevaApelacionTipo.trim() });
+                  setNuevaApelacionSala('');
+                  setNuevaApelacionToca('');
+                  setNuevaApelacionTipo('');
+                }}
+                className="flex items-center gap-1.5 bg-navy-900 text-cream px-3 py-2 rounded-lg text-sm font-medium"
+              >
+                <Plus size={14} /> Agregar
+              </button>
             </div>
           )}
         </div>

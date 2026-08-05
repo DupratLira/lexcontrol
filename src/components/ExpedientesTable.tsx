@@ -42,9 +42,13 @@ export default function ExpedientesTable({ expedientes, onSelect, selectedId, ti
                 </div>
                 <div className="flex gap-1.5 mt-2 flex-wrap">
                   {esNuevo && <Badge tone="red">ACTUALIZADO</Badge>}
-                  {exp.enAmparo && <Badge tone="red">AMPARO {exp.tipoAmparo?.toUpperCase()}</Badge>}
+                  {exp.amparos.length > 0 && (
+                    <Badge tone="red">AMPARO{exp.amparos.length > 1 ? ` ×${exp.amparos.length}` : ''}</Badge>
+                  )}
                   {exp.escritoPendiente && <Badge tone="amber">ESCRITO</Badge>}
-                  {exp.enApelacion && <Badge tone="slate">APELACIÓN</Badge>}
+                  {exp.apelaciones.length > 0 && (
+                    <Badge tone="slate">APELACIÓN{exp.apelaciones.length > 1 ? ` ×${exp.apelaciones.length}` : ''}</Badge>
+                  )}
                   {exp.concluido && <Badge tone="slate">CONCLUIDO</Badge>}
                 </div>
               </div>

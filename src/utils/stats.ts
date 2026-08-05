@@ -43,8 +43,8 @@ export function computeStats(expedientes: Expediente[]): DashboardStats {
 
   return {
     total: activos.length,
-    amparos: activos.filter((e) => e.enAmparo).length,
-    apelaciones: activos.filter((e) => e.enApelacion).length,
+    amparos: activos.filter((e) => e.amparos.length > 0).length,
+    apelaciones: activos.filter((e) => e.apelaciones.length > 0).length,
     escritos: activos.filter((e) => e.escritoPendiente).length,
     urgentes: activos.filter(isVencimientoUrgente).length,
     congelados: activos.filter(isCongelado).length,

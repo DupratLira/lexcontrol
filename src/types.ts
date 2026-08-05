@@ -8,6 +8,26 @@ export interface Actuacion {
   creadoPor?: string | null;
 }
 
+export type TipoAmparo = 'Directo' | 'Indirecto';
+
+export interface Amparo {
+  id: string;
+  expedienteId: string;
+  numero: string | null;
+  juzgado: string | null;
+  tipo: TipoAmparo | null;
+  creadoEn: string;
+}
+
+export interface Apelacion {
+  id: string;
+  expedienteId: string;
+  sala: string | null;
+  toca: string | null;
+  tipo: string | null;
+  creadoEn: string;
+}
+
 export interface Expediente {
   id: string;
   materia: Materia;
@@ -29,15 +49,8 @@ export interface Expediente {
   escritoTipo: string | null;
   escritoFechaLimite: string | null;
 
-  enAmparo: boolean;
-  amparoNumero: string | null;
-  amparoJuzgado: string | null;
-  tipoAmparo: string | null;
-
-  enApelacion: boolean;
-  apelacionSala: string | null;
-  apelacionToca: string | null;
-  apelacionTipo: string | null;
+  amparos: Amparo[];
+  apelaciones: Apelacion[];
 
   tieneAudiencia: boolean;
   audienciaFecha: string | null;
