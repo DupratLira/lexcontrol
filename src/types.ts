@@ -8,7 +8,7 @@ export interface Actuacion {
   creadoPor?: string | null;
 }
 
-export type TipoAmparo = 'Directo' | 'Indirecto';
+export type TipoAmparo = 'Directo' | 'Indirecto' | 'Queja' | 'Revision' | 'Inconformidad';
 
 export interface Amparo {
   id: string;

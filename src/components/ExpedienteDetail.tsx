@@ -401,6 +401,9 @@ export default function ExpedienteDetail({
               >
                 <option value="Directo">Directo</option>
                 <option value="Indirecto">Indirecto</option>
+                <option value="Queja">Queja</option>
+                <option value="Revision">Revisión</option>
+                <option value="Inconformidad">Inconformidad</option>
               </select>
               <button
                 onClick={() => {
