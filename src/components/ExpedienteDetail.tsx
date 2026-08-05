@@ -455,10 +455,12 @@ export default function ExpedienteDetail({
           )}
         </div>
 
-        {(local.creadoPor || local.actualizadoPor) && (
+        {(expediente.creadoPor || expediente.actualizadoPor) && (
           <p className="text-xs text-navy-900/30">
-            {local.creadoPor && <>Creado por {local.creadoPor}. </>}
-            {local.actualizadoPor && <>Última actualización por {local.actualizadoPor} el {new Date(local.actualizadoEn).toLocaleString('es-MX')}.</>}
+            {expediente.creadoPor && <>Creado por {expediente.creadoPor}. </>}
+            {expediente.actualizadoPor && (
+              <>Última actualización por {expediente.actualizadoPor} el {new Date(expediente.actualizadoEn).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })}.</>
+            )}
           </p>
         )}
 

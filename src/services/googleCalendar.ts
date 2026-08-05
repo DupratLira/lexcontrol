@@ -214,8 +214,12 @@ export async function syncAudienciaToCalendar(params: {
   try {
     const accessToken = await getAccessToken();
 
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Mexico_City';
-    const inicio = new Date(`${params.audienciaFecha}T${params.audienciaHora}:00`);
+    // El despacho opera en Ciudad de Mexico. Se fija el desfase UTC-6 de forma
+    // explicita (en vez de usar la zona horaria del dispositivo) para que la
+    // hora del evento sea siempre correcta sin importar como este configurado
+    // el celular de quien sincroniza. Mexico ya no usa horario de verano.
+    const timeZone = 'America/Mexico_City';
+    const inicio = new Date(`${params.audienciaFecha}T${params.audienciaHora}:00-06:00`);
     const fin = new Date(inicio.getTime() + 60 * 60 * 1000);
 
     const eventPayload = {
