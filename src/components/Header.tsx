@@ -1,4 +1,4 @@
-import { Calendar, Download, LogOut, Users } from 'lucide-react';
+import { BarChart3, Calendar, Download, LogOut, Users } from 'lucide-react';
 
 interface Props {
   userEmail: string;
@@ -7,10 +7,11 @@ interface Props {
   onLogout: () => void;
   isAdmin?: boolean;
   onOpenUsuarios?: () => void;
+  onOpenReportes?: () => void;
   mostrarZip?: boolean;
 }
 
-export default function Header({ userEmail, onConectar, onExportZip, onLogout, isAdmin, onOpenUsuarios, mostrarZip = true }: Props) {
+export default function Header({ userEmail, onConectar, onExportZip, onLogout, isAdmin, onOpenUsuarios, onOpenReportes, mostrarZip = true }: Props) {
   const initials = userEmail.slice(0, 2).toUpperCase();
   return (
     <header className="bg-navy-900 text-cream border-b border-navy-700/60">
@@ -33,6 +34,15 @@ export default function Header({ userEmail, onConectar, onExportZip, onLogout, i
               className="flex items-center gap-2 bg-navy-800 hover:bg-navy-700 transition-colors text-cream/90 text-sm px-2.5 sm:px-3 py-2 rounded-lg border border-navy-700"
             >
               <Users size={16} /> <span className="hidden sm:inline">Usuarios</span>
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={onOpenReportes}
+              title="Reportes"
+              className="flex items-center gap-2 bg-navy-800 hover:bg-navy-700 transition-colors text-cream/90 text-sm px-2.5 sm:px-3 py-2 rounded-lg border border-navy-700"
+            >
+              <BarChart3 size={16} /> <span className="hidden sm:inline">Reportes</span>
             </button>
           )}
           <button

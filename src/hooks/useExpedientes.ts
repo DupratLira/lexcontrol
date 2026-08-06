@@ -27,7 +27,7 @@ async function fetchExpedientesRows(): Promise<{ rows: ExpedienteRow[]; hasConcl
 
   const basic = await supabase
     .from('expedientes')
-    .select(EXPEDIENTE_COLUMNS_WITH_CONCLUIDO.replace(',concluido', ''))
+    .select(EXPEDIENTE_COLUMNS_WITH_CONCLUIDO.replace(',concluido,concluido_en', ''))
     .order('created_at', { ascending: false });
 
   if (basic.error) throw basic.error;
@@ -168,7 +168,7 @@ export function useExpedientes(userEmail: string | null) {
         setExpedientes((prev) => prev.map((e) => (e.id === id ? { ...e, concluido: true } : e)));
         return;
       }
-      await updateExpediente(id, { concluido: true });
+      await updateExpediente(id, { concluido: true, concluidoEn: new Date().toISOString() });
     },
     [updateExpediente]
   );

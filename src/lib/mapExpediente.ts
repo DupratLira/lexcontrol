@@ -13,9 +13,10 @@ export const EXPEDIENTE_COLUMNS = [
   'updated_at', 'es_audiencia', 'audiencia_fecha', 'audiencia_hora',
 ].join(',');
 
-// La columna `concluido` es opcional: solo existe si se corrió la migración
-// incluida en supabase-migration.sql. La pedimos aparte y toleramos que falte.
-export const EXPEDIENTE_COLUMNS_WITH_CONCLUIDO = EXPEDIENTE_COLUMNS + ',concluido';
+// La columna `concluido` (y `concluido_en`, la fecha en que se marcó así) es
+// opcional: solo existe si se corrió la migración incluida en
+// supabase-migration.sql. La pedimos aparte y toleramos que falte.
+export const EXPEDIENTE_COLUMNS_WITH_CONCLUIDO = EXPEDIENTE_COLUMNS + ',concluido,concluido_en';
 
 export interface ExpedienteRow {
   id: string;
@@ -42,6 +43,7 @@ export interface ExpedienteRow {
   audiencia_fecha: string | null;
   audiencia_hora: string | null;
   concluido?: boolean | null;
+  concluido_en?: string | null;
 }
 
 export function rowToExpediente(row: ExpedienteRow): Expediente {
@@ -74,6 +76,7 @@ export function rowToExpediente(row: ExpedienteRow): Expediente {
     audienciaHora: row.audiencia_hora,
 
     concluido: !!row.concluido,
+    concluidoEn: row.concluido_en ?? null,
 
     creadoPor: row.created_by_email,
     actualizadoPor: row.updated_by_email,
@@ -146,6 +149,7 @@ export interface ExpedienteWritePayload {
   updated_by_email?: string | null;
   created_by_email?: string | null;
   concluido?: boolean;
+  concluido_en?: string | null;
 }
 
 export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePayload {
@@ -169,5 +173,6 @@ export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePa
   if (patch.audienciaFecha !== undefined) out.audiencia_fecha = patch.audienciaFecha;
   if (patch.audienciaHora !== undefined) out.audiencia_hora = patch.audienciaHora;
   if (patch.concluido !== undefined) out.concluido = patch.concluido;
+  if (patch.concluidoEn !== undefined) out.concluido_en = patch.concluidoEn;
   return out;
 }

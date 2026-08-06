@@ -57,6 +57,7 @@ export interface Expediente {
   audienciaHora: string | null;
 
   concluido: boolean;
+  concluidoEn: string | null;
 
   creadoPor: string | null;
   actualizadoPor: string | null;

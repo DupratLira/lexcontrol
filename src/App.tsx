@@ -14,6 +14,7 @@ import EscritosView from './components/EscritosView';
 import InstallPrompt from './components/InstallPrompt';
 import Login from './components/Login';
 import AdminUsuarios from './components/AdminUsuarios';
+import ReportesView from './components/ReportesView';
 import Privacidad from './components/Privacidad';
 import { useAuth } from './hooks/useAuth';
 import { useExpedientes } from './hooks/useExpedientes';
@@ -74,6 +75,7 @@ function Dashboard({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
   const [showUsuarios, setShowUsuarios] = useState(false);
+  const [showReportes, setShowReportes] = useState(false);
 
   const stats = useMemo(() => computeStats(expedientes), [expedientes]);
 
@@ -132,6 +134,7 @@ function Dashboard({
         onLogout={onLogout}
         isAdmin={isAdmin}
         onOpenUsuarios={() => setShowUsuarios(true)}
+        onOpenReportes={() => setShowReportes(true)}
         mostrarZip={isAdmin || esCliente}
       />
 
@@ -223,6 +226,8 @@ function Dashboard({
       )}
 
       {showUsuarios && <AdminUsuarios onClose={() => setShowUsuarios(false)} />}
+
+      {showReportes && <ReportesView expedientes={expedientes} onClose={() => setShowReportes(false)} />}
     </div>
   );
 }
