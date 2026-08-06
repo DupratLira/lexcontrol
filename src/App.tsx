@@ -194,8 +194,8 @@ function Dashboard({
                     onEliminarAmparo={(amparoId) => eliminarAmparo(amparoId).catch((e) => alert('Error: ' + e.message))}
                     onAddApelacion={(datos) => addApelacion(selected.id, datos).catch((e) => alert('Error al guardar: ' + e.message))}
                     onEliminarApelacion={(apelacionId) => eliminarApelacion(apelacionId).catch((e) => alert('Error: ' + e.message))}
-                    onConcluir={() => {
-                      concluirExpediente(selected.id).catch((e) => alert('Error: ' + e.message));
+                    onConcluir={(datos) => {
+                      concluirExpediente(selected.id, datos).catch((e) => alert('Error: ' + e.message));
                       setSelectedId(null);
                     }}
                     onEliminar={() => {

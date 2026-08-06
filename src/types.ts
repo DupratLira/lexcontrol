@@ -10,6 +10,31 @@ export interface Actuacion {
 
 export type TipoAmparo = 'Directo' | 'Indirecto' | 'Queja' | 'Revision' | 'Inconformidad';
 
+// Motivo por el que se concluyo un expediente. 'Juicio' aplica a Conciliaciones
+// Laborales cuando no hubo conciliacion y el asunto paso a juicio.
+export type MotivoConclusion =
+  | 'Favorable'
+  | 'Desfavorable'
+  | 'Convenio'
+  | 'Revocacion'
+  | 'Abandono'
+  | 'Juicio'
+  | 'Otro';
+
+export const MOTIVOS_CONCLUSION: MotivoConclusion[] = [
+  'Favorable', 'Desfavorable', 'Convenio', 'Revocacion', 'Abandono', 'Juicio', 'Otro',
+];
+
+export const ETIQUETAS_MOTIVO: Record<MotivoConclusion, string> = {
+  Favorable: 'Favorable',
+  Desfavorable: 'Desfavorable',
+  Convenio: 'Convenio / Conciliación',
+  Revocacion: 'Revocación del cliente',
+  Abandono: 'Cliente abandonó el proceso',
+  Juicio: 'Se fue a juicio (sin conciliar)',
+  Otro: 'Otro',
+};
+
 export interface Amparo {
   id: string;
   expedienteId: string;
@@ -58,6 +83,9 @@ export interface Expediente {
 
   concluido: boolean;
   concluidoEn: string | null;
+  motivoConclusion: MotivoConclusion | null;
+  motivoNota: string | null;
+  montoConciliacion: number | null;
 
   creadoPor: string | null;
   actualizadoPor: string | null;

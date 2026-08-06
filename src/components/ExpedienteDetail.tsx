@@ -6,6 +6,7 @@ import {
 import type { Expediente, Materia, TipoAmparo } from '../types';
 import { MATERIAS } from '../types';
 import Toggle from './Toggle';
+import ConcluirExpedienteModal, { type DatosConclusion } from './ConcluirExpedienteModal';
 import { syncFechaLimiteToCalendar, syncAudienciaToCalendar } from '../services/googleCalendar';
 
 interface Props {
@@ -17,7 +18,7 @@ interface Props {
   onEliminarAmparo: (amparoId: string) => void;
   onAddApelacion: (datos: { sala: string; toca: string; tipo: string }) => void;
   onEliminarApelacion: (apelacionId: string) => void;
-  onConcluir: () => void;
+  onConcluir: (datos: DatosConclusion) => void;
   onEliminar: () => void;
   soloLectura?: boolean;
 }
@@ -43,6 +44,7 @@ export default function ExpedienteDetail({
   const [nuevaApelacionSala, setNuevaApelacionSala] = useState('');
   const [nuevaApelacionToca, setNuevaApelacionToca] = useState('');
   const [nuevaApelacionTipo, setNuevaApelacionTipo] = useState('');
+  const [mostrarConcluir, setMostrarConcluir] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
   const [syncState, setSyncState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -542,7 +544,7 @@ export default function ExpedienteDetail({
         {!soloLectura && (
           <div className="flex flex-wrap gap-2 pt-2 border-t border-navy-900/5">
             <button
-              onClick={onConcluir}
+              onClick={() => setMostrarConcluir(true)}
               className="flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-lg transition-colors"
             >
               <CheckCircle2 size={15} /> Concluir Expediente
@@ -558,6 +560,17 @@ export default function ExpedienteDetail({
           </div>
         )}
       </div>
+
+      {mostrarConcluir && (
+        <ConcluirExpedienteModal
+          materia={expediente.materia}
+          onClose={() => setMostrarConcluir(false)}
+          onConfirm={(datos) => {
+            onConcluir(datos);
+            setMostrarConcluir(false);
+          }}
+        />
+      )}
     </div>
   );
 }

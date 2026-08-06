@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import {
+  EXPEDIENTE_COLUMNS,
   EXPEDIENTE_COLUMNS_WITH_CONCLUIDO,
   expedienteToPatch,
   rowToExpediente,
@@ -10,11 +11,12 @@ import {
   type AmparoRow,
   type ApelacionRow,
 } from '../lib/mapExpediente';
-import type { Actuacion, Amparo, Apelacion, Expediente, TipoAmparo } from '../types';
+import type { Actuacion, Amparo, Apelacion, Expediente, MotivoConclusion, TipoAmparo } from '../types';
 
-// Si la migracion opcional (supabase-migration.sql) no se ha corrido, la
-// columna `concluido` no existe todavia: en ese caso reintentamos sin ella
-// para no romper la app, y "concluir" solo funciona de forma local.
+// Las columnas `concluido`/`concluido_en` y `motivo_conclusion`/`motivo_nota`/
+// `monto_conciliacion` son opcionales: solo existen si se corrieron las
+// migraciones correspondientes en supabase-migration.sql. Se piden con
+// fallback en cascada para no romper la app si alguna todavia no existe.
 async function fetchExpedientesRows(): Promise<{ rows: ExpedienteRow[]; hasConcluido: boolean }> {
   const full = await supabase
     .from('expedientes')
@@ -25,9 +27,18 @@ async function fetchExpedientesRows(): Promise<{ rows: ExpedienteRow[]; hasConcl
     return { rows: (full.data ?? []) as unknown as ExpedienteRow[], hasConcluido: true };
   }
 
+  const soloConcluido = await supabase
+    .from('expedientes')
+    .select(EXPEDIENTE_COLUMNS + ',concluido,concluido_en')
+    .order('created_at', { ascending: false });
+
+  if (!soloConcluido.error) {
+    return { rows: (soloConcluido.data ?? []) as unknown as ExpedienteRow[], hasConcluido: true };
+  }
+
   const basic = await supabase
     .from('expedientes')
-    .select(EXPEDIENTE_COLUMNS_WITH_CONCLUIDO.replace(',concluido,concluido_en', ''))
+    .select(EXPEDIENTE_COLUMNS)
     .order('created_at', { ascending: false });
 
   if (basic.error) throw basic.error;
@@ -163,12 +174,21 @@ export function useExpedientes(userEmail: string | null) {
   );
 
   const concluirExpediente = useCallback(
-    async (id: string) => {
+    async (
+      id: string,
+      motivo: { motivoConclusion: MotivoConclusion; motivoNota?: string | null; montoConciliacion?: number | null }
+    ) => {
       if (!hasConcluidoCol.current) {
         setExpedientes((prev) => prev.map((e) => (e.id === id ? { ...e, concluido: true } : e)));
         return;
       }
-      await updateExpediente(id, { concluido: true, concluidoEn: new Date().toISOString() });
+      await updateExpediente(id, {
+        concluido: true,
+        concluidoEn: new Date().toISOString(),
+        motivoConclusion: motivo.motivoConclusion,
+        motivoNota: motivo.motivoNota ?? null,
+        montoConciliacion: motivo.montoConciliacion ?? null,
+      });
     },
     [updateExpediente]
   );

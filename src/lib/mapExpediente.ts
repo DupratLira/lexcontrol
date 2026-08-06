@@ -1,4 +1,4 @@
-import type { Amparo, Apelacion, Expediente, Materia, TipoAmparo } from '../types';
+import type { Amparo, Apelacion, Expediente, Materia, MotivoConclusion, TipoAmparo } from '../types';
 
 // Nombres reales de columnas en la tabla `expedientes` de Supabase
 // (confirmados directamente contra la base de datos existente).
@@ -13,10 +13,11 @@ export const EXPEDIENTE_COLUMNS = [
   'updated_at', 'es_audiencia', 'audiencia_fecha', 'audiencia_hora',
 ].join(',');
 
-// La columna `concluido` (y `concluido_en`, la fecha en que se marcó así) es
-// opcional: solo existe si se corrió la migración incluida en
-// supabase-migration.sql. La pedimos aparte y toleramos que falte.
-export const EXPEDIENTE_COLUMNS_WITH_CONCLUIDO = EXPEDIENTE_COLUMNS + ',concluido,concluido_en';
+// La columna `concluido` (fecha y motivo de conclusión incluidos) es opcional:
+// solo existe si se corrieron las migraciones incluidas en supabase-migration.sql.
+// Las pedimos aparte y toleramos que falten.
+export const COLUMNAS_CONCLUIDO = ',concluido,concluido_en,motivo_conclusion,motivo_nota,monto_conciliacion';
+export const EXPEDIENTE_COLUMNS_WITH_CONCLUIDO = EXPEDIENTE_COLUMNS + COLUMNAS_CONCLUIDO;
 
 export interface ExpedienteRow {
   id: string;
@@ -44,6 +45,9 @@ export interface ExpedienteRow {
   audiencia_hora: string | null;
   concluido?: boolean | null;
   concluido_en?: string | null;
+  motivo_conclusion?: string | null;
+  motivo_nota?: string | null;
+  monto_conciliacion?: number | null;
 }
 
 export function rowToExpediente(row: ExpedienteRow): Expediente {
@@ -77,6 +81,9 @@ export function rowToExpediente(row: ExpedienteRow): Expediente {
 
     concluido: !!row.concluido,
     concluidoEn: row.concluido_en ?? null,
+    motivoConclusion: (row.motivo_conclusion as MotivoConclusion) || null,
+    motivoNota: row.motivo_nota ?? null,
+    montoConciliacion: row.monto_conciliacion ?? null,
 
     creadoPor: row.created_by_email,
     actualizadoPor: row.updated_by_email,
@@ -150,6 +157,9 @@ export interface ExpedienteWritePayload {
   created_by_email?: string | null;
   concluido?: boolean;
   concluido_en?: string | null;
+  motivo_conclusion?: string | null;
+  motivo_nota?: string | null;
+  monto_conciliacion?: number | null;
 }
 
 export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePayload {
@@ -174,5 +184,8 @@ export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePa
   if (patch.audienciaHora !== undefined) out.audiencia_hora = patch.audienciaHora;
   if (patch.concluido !== undefined) out.concluido = patch.concluido;
   if (patch.concluidoEn !== undefined) out.concluido_en = patch.concluidoEn;
+  if (patch.motivoConclusion !== undefined) out.motivo_conclusion = patch.motivoConclusion;
+  if (patch.motivoNota !== undefined) out.motivo_nota = patch.motivoNota;
+  if (patch.montoConciliacion !== undefined) out.monto_conciliacion = patch.montoConciliacion;
   return out;
 }
