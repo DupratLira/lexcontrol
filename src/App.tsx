@@ -187,6 +187,7 @@ function Dashboard({
                     key={selected.id}
                     expediente={selected}
                     soloLectura={esCliente}
+                    isAdmin={isAdmin}
                     onBack={() => setSelectedId(null)}
                     onUpdate={(patch) => updateExpediente(selected.id, patch).catch((e) => alert('Error al guardar: ' + e.message))}
                     onAddActuacion={(desc) => addActuacion(selected.id, desc)}

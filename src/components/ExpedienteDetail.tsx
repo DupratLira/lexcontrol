@@ -21,6 +21,7 @@ interface Props {
   onConcluir: (datos: DatosConclusion) => void;
   onEliminar: () => void;
   soloLectura?: boolean;
+  isAdmin?: boolean;
 }
 
 const MATERIA_STYLE: Record<Materia, string> = {
@@ -34,7 +35,7 @@ const MATERIA_STYLE: Record<Materia, string> = {
 export default function ExpedienteDetail({
   expediente, onBack, onUpdate, onAddActuacion,
   onAddAmparo, onEliminarAmparo, onAddApelacion, onEliminarApelacion,
-  onConcluir, onEliminar, soloLectura,
+  onConcluir, onEliminar, soloLectura, isAdmin,
 }: Props) {
   const [local, setLocal] = useState(expediente);
   const [nuevaActuacion, setNuevaActuacion] = useState('');
@@ -549,14 +550,16 @@ export default function ExpedienteDetail({
             >
               <CheckCircle2 size={15} /> Concluir Expediente
             </button>
-            <button
-              onClick={() => {
-                if (confirm('¿Eliminar este expediente de forma permanente?')) onEliminar();
-              }}
-              className="flex items-center gap-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors"
-            >
-              <Trash2 size={15} /> Eliminar Expediente
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  if (confirm('¿Eliminar este expediente de forma permanente?')) onEliminar();
+                }}
+                className="flex items-center gap-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors"
+              >
+                <Trash2 size={15} /> Eliminar Expediente
+              </button>
+            )}
           </div>
         )}
       </div>
