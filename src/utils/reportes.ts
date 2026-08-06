@@ -288,6 +288,12 @@ function columnas(anchos: number[]): string {
   return anchos.map((w) => `<Column ss:Width="${w}"/>`).join('');
 }
 
+// Activa los desplegables de filtro de Excel (AutoFilter) sobre el encabezado
+// y todas las filas de datos, para poder filtrar/ordenar directo en Excel.
+function autoFiltro(filas: number, numColumnas: number): string {
+  return `<AutoFilter x:Range="R1C1:R${filas}C${numColumnas}" xmlns="urn:schemas-microsoft-com:office:excel"></AutoFilter>`;
+}
+
 function hojaResumen(
   filas: FilaReporte[],
   desglose: FilaMotivo[],
@@ -355,7 +361,8 @@ function hojaAltas(altas: FilaAlta[]): string {
     );
   });
   if (altas.length === 0) filasXml.push(fila(celda('Sin altas en este periodo', 'celda')));
-  return `<Worksheet ss:Name="Altas"><Table>${columnas([110, 130, 160, 160, 140, 100])}${filasXml.join('\n')}</Table></Worksheet>`;
+  const filtro = altas.length > 0 ? autoFiltro(1 + altas.length, 6) : '';
+  return `<Worksheet ss:Name="Altas"><Table>${columnas([110, 130, 160, 160, 140, 100])}${filasXml.join('\n')}</Table>${filtro}</Worksheet>`;
 }
 
 function hojaBajas(bajas: FilaBaja[]): string {
@@ -385,7 +392,8 @@ function hojaBajas(bajas: FilaBaja[]): string {
     );
   });
   if (bajas.length === 0) filasXml.push(fila(celda('Sin bajas en este periodo', 'celda')));
-  return `<Worksheet ss:Name="Bajas"><Table>${columnas([110, 130, 160, 160, 180, 100, 100])}${filasXml.join('\n')}</Table></Worksheet>`;
+  const filtro = bajas.length > 0 ? autoFiltro(1 + bajas.length, 7) : '';
+  return `<Worksheet ss:Name="Bajas"><Table>${columnas([110, 130, 160, 160, 180, 100, 100])}${filasXml.join('\n')}</Table>${filtro}</Worksheet>`;
 }
 
 export function reporteToExcelXml(
@@ -401,7 +409,8 @@ export function reporteToExcelXml(
   return `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:x="urn:schemas-microsoft-com:office:excel">
 ${ESTILOS_XML}
 ${hojaResumen(filas, desglose, montoConciliado, materiaLabel, motivoLabel, periodoLabel)}
 ${hojaAltas(altas)}
