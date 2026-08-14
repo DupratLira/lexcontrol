@@ -41,6 +41,7 @@ export interface Amparo {
   numero: string | null;
   juzgado: string | null;
   tipo: TipoAmparo | null;
+  comentario: string | null;
   creadoEn: string;
 }
 
@@ -50,6 +51,7 @@ export interface Apelacion {
   sala: string | null;
   toca: string | null;
   tipo: string | null;
+  comentario: string | null;
   creadoEn: string;
 }
 
