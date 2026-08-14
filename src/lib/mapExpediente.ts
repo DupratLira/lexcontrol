@@ -100,6 +100,7 @@ export interface AmparoRow {
   numero: string | null;
   juzgado: string | null;
   tipo: string | null;
+  comentario: string | null;
   created_at: string;
 }
 
@@ -110,6 +111,7 @@ export function rowToAmparo(row: AmparoRow): Amparo {
     numero: row.numero,
     juzgado: row.juzgado,
     tipo: (row.tipo as TipoAmparo) || null,
+    comentario: row.comentario ?? null,
     creadoEn: row.created_at,
   };
 }
@@ -120,6 +122,7 @@ export interface ApelacionRow {
   sala: string | null;
   toca: string | null;
   tipo: string | null;
+  comentario: string | null;
   created_at: string;
 }
 
@@ -130,6 +133,7 @@ export function rowToApelacion(row: ApelacionRow): Apelacion {
     sala: row.sala,
     toca: row.toca,
     tipo: row.tipo,
+    comentario: row.comentario ?? null,
     creadoEn: row.created_at,
   };
 }
