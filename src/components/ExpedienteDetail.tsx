@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ArrowLeft, Calendar as CalendarIcon, CheckCircle2, Clock, FileText,
-  Gavel, Plus, Save, Scale, Trash2, Users,
+  Gavel, Pencil, Plus, Save, Scale, Trash2, Users,
 } from 'lucide-react';
 import type { Expediente, Materia, TipoAmparo } from '../types';
 import { MATERIAS } from '../types';
@@ -14,9 +14,13 @@ interface Props {
   onBack: () => void;
   onUpdate: (patch: Partial<Expediente>) => void;
   onAddActuacion: (descripcion: string) => void;
-  onAddAmparo: (datos: { numero: string; juzgado: string; tipo: TipoAmparo }) => void;
+  onUpdateActuacion: (actuacionId: string, descripcion: string) => void;
+  onEliminarActuacion: (actuacionId: string) => void;
+  onAddAmparo: (datos: { numero: string; juzgado: string; tipo: TipoAmparo; comentario?: string | null }) => void;
+  onUpdateAmparo: (amparoId: string, datos: { numero: string; juzgado: string; tipo: TipoAmparo; comentario?: string | null }) => void;
   onEliminarAmparo: (amparoId: string) => void;
-  onAddApelacion: (datos: { sala: string; toca: string; tipo: string }) => void;
+  onAddApelacion: (datos: { sala: string; toca: string; tipo: string; comentario?: string | null }) => void;
+  onUpdateApelacion: (apelacionId: string, datos: { sala: string; toca: string; tipo: string; comentario?: string | null }) => void;
   onEliminarApelacion: (apelacionId: string) => void;
   onConcluir: (datos: DatosConclusion) => void;
   onEliminar: () => void;
@@ -33,18 +37,32 @@ const MATERIA_STYLE: Record<Materia, string> = {
 };
 
 export default function ExpedienteDetail({
-  expediente, onBack, onUpdate, onAddActuacion,
-  onAddAmparo, onEliminarAmparo, onAddApelacion, onEliminarApelacion,
+  expediente, onBack, onUpdate, onAddActuacion, onUpdateActuacion, onEliminarActuacion,
+  onAddAmparo, onUpdateAmparo, onEliminarAmparo, onAddApelacion, onUpdateApelacion, onEliminarApelacion,
   onConcluir, onEliminar, soloLectura, isAdmin,
 }: Props) {
   const [local, setLocal] = useState(expediente);
   const [nuevaActuacion, setNuevaActuacion] = useState('');
+  const [editandoActuacionId, setEditandoActuacionId] = useState<string | null>(null);
+  const [editActuacionTexto, setEditActuacionTexto] = useState('');
   const [nuevoAmparoNumero, setNuevoAmparoNumero] = useState('');
   const [nuevoAmparoJuzgado, setNuevoAmparoJuzgado] = useState('');
   const [nuevoAmparoTipo, setNuevoAmparoTipo] = useState<TipoAmparo>('Directo');
+  const [nuevoAmparoComentario, setNuevoAmparoComentario] = useState('');
+  const [editandoAmparoId, setEditandoAmparoId] = useState<string | null>(null);
+  const [editAmparoNumero, setEditAmparoNumero] = useState('');
+  const [editAmparoJuzgado, setEditAmparoJuzgado] = useState('');
+  const [editAmparoTipo, setEditAmparoTipo] = useState<TipoAmparo>('Directo');
+  const [editAmparoComentario, setEditAmparoComentario] = useState('');
   const [nuevaApelacionSala, setNuevaApelacionSala] = useState('');
   const [nuevaApelacionToca, setNuevaApelacionToca] = useState('');
   const [nuevaApelacionTipo, setNuevaApelacionTipo] = useState('');
+  const [nuevaApelacionComentario, setNuevaApelacionComentario] = useState('');
+  const [editandoApelacionId, setEditandoApelacionId] = useState<string | null>(null);
+  const [editApelacionSala, setEditApelacionSala] = useState('');
+  const [editApelacionToca, setEditApelacionToca] = useState('');
+  const [editApelacionTipo, setEditApelacionTipo] = useState('');
+  const [editApelacionComentario, setEditApelacionComentario] = useState('');
   const [mostrarConcluir, setMostrarConcluir] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
   const [syncState, setSyncState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -362,29 +380,102 @@ export default function ExpedienteDetail({
             <p className="text-sm text-navy-900/40 italic">Sin amparos registrados.</p>
           ) : (
             <ul className="space-y-2">
-              {expediente.amparos.map((a) => (
-                <li key={a.id} className="text-sm bg-red-50 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
-                  <div className="text-navy-900/80">
-                    <span className="font-medium">{a.tipo ?? 'Amparo'}</span>
-                    {a.numero && <> — {a.numero}</>}
-                    {a.juzgado && <span className="text-navy-900/50"> ({a.juzgado})</span>}
-                  </div>
-                  {!soloLectura && (
-                    <button
-                      onClick={() => {
-                        if (confirm('¿Eliminar este amparo?')) onEliminarAmparo(a.id);
-                      }}
-                      className="text-red-500 hover:text-red-700 shrink-0"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </li>
-              ))}
+              {expediente.amparos.map((a) =>
+                editandoAmparoId === a.id ? (
+                  <li key={a.id} className="text-sm bg-red-50 rounded-lg px-3 py-2 space-y-2">
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      <input
+                        value={editAmparoNumero}
+                        onChange={(e) => setEditAmparoNumero(e.target.value)}
+                        placeholder="Número de amparo"
+                        className="border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                      />
+                      <input
+                        value={editAmparoJuzgado}
+                        onChange={(e) => setEditAmparoJuzgado(e.target.value)}
+                        placeholder="Juzgado / Tribunal"
+                        className="border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                      />
+                      <select
+                        value={editAmparoTipo}
+                        onChange={(e) => setEditAmparoTipo(e.target.value as TipoAmparo)}
+                        className="border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                      >
+                        <option value="Directo">Directo</option>
+                        <option value="Indirecto">Indirecto</option>
+                        <option value="Queja">Queja</option>
+                        <option value="Revision">Revisión</option>
+                        <option value="Inconformidad">Inconformidad</option>
+                      </select>
+                      <input
+                        value={editAmparoComentario}
+                        onChange={(e) => setEditAmparoComentario(e.target.value)}
+                        placeholder="Comentario (para identificarlo)"
+                        className="border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={() => setEditandoAmparoId(null)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-navy-900/60 hover:bg-navy-900/5"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          onUpdateAmparo(a.id, {
+                            numero: editAmparoNumero.trim(),
+                            juzgado: editAmparoJuzgado.trim(),
+                            tipo: editAmparoTipo,
+                            comentario: editAmparoComentario.trim() || null,
+                          });
+                          setEditandoAmparoId(null);
+                        }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-navy-900 text-cream"
+                      >
+                        Guardar
+                      </button>
+                    </div>
+                  </li>
+                ) : (
+                  <li key={a.id} className="text-sm bg-red-50 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+                    <div className="text-navy-900/80">
+                      <span className="font-medium">{a.tipo ?? 'Amparo'}</span>
+                      {a.numero && <> · {a.numero}</>}
+                      {a.juzgado && <span className="text-navy-900/50"> ({a.juzgado})</span>}
+                      {a.comentario && <div className="text-navy-900/50 text-xs italic mt-0.5">{a.comentario}</div>}
+                    </div>
+                    {!soloLectura && (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditandoAmparoId(a.id);
+                            setEditAmparoNumero(a.numero ?? '');
+                            setEditAmparoJuzgado(a.juzgado ?? '');
+                            setEditAmparoTipo((a.tipo as TipoAmparo) ?? 'Directo');
+                            setEditAmparoComentario(a.comentario ?? '');
+                          }}
+                          className="text-navy-900/50 hover:text-navy-900"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm('¿Eliminar este amparo?')) onEliminarAmparo(a.id);
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                )
+              )}
             </ul>
           )}
           {!soloLectura && (
-            <div className="grid sm:grid-cols-[1fr_1fr_auto_auto] gap-2">
+            <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-2">
               <input
                 value={nuevoAmparoNumero}
                 onChange={(e) => setNuevoAmparoNumero(e.target.value)}
@@ -408,14 +499,21 @@ export default function ExpedienteDetail({
                 <option value="Revision">Revisión</option>
                 <option value="Inconformidad">Inconformidad</option>
               </select>
+              <input
+                value={nuevoAmparoComentario}
+                onChange={(e) => setNuevoAmparoComentario(e.target.value)}
+                placeholder="Comentario (para identificarlo, opcional)"
+                className="sm:col-span-3 border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+              />
               <button
                 onClick={() => {
-                  onAddAmparo({ numero: nuevoAmparoNumero.trim(), juzgado: nuevoAmparoJuzgado.trim(), tipo: nuevoAmparoTipo });
+                  onAddAmparo({ numero: nuevoAmparoNumero.trim(), juzgado: nuevoAmparoJuzgado.trim(), tipo: nuevoAmparoTipo, comentario: nuevoAmparoComentario.trim() || null });
                   setNuevoAmparoNumero('');
                   setNuevoAmparoJuzgado('');
                   setNuevoAmparoTipo('Directo');
+                  setNuevoAmparoComentario('');
                 }}
-                className="flex items-center gap-1.5 bg-navy-900 text-cream px-3 py-2 rounded-lg text-sm font-medium"
+                className="sm:col-span-3 flex items-center justify-center gap-1.5 bg-navy-900 text-cream px-3 py-2 rounded-lg text-sm font-medium"
               >
                 <Plus size={14} /> Agregar
               </button>
@@ -429,25 +527,93 @@ export default function ExpedienteDetail({
             <p className="text-sm text-navy-900/40 italic">Sin apelaciones registradas.</p>
           ) : (
             <ul className="space-y-2">
-              {expediente.apelaciones.map((a) => (
-                <li key={a.id} className="text-sm bg-emerald-50 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
-                  <div className="text-navy-900/80">
-                    {a.sala && <span className="font-medium">{a.sala}</span>}
-                    {a.toca && <> — Toca {a.toca}</>}
-                    {a.tipo && <span className="text-navy-900/50"> ({a.tipo})</span>}
-                  </div>
-                  {!soloLectura && (
-                    <button
-                      onClick={() => {
-                        if (confirm('¿Eliminar esta apelación?')) onEliminarApelacion(a.id);
-                      }}
-                      className="text-red-500 hover:text-red-700 shrink-0"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </li>
-              ))}
+              {expediente.apelaciones.map((a) =>
+                editandoApelacionId === a.id ? (
+                  <li key={a.id} className="text-sm bg-emerald-50 rounded-lg px-3 py-2 space-y-2">
+                    <div className="grid sm:grid-cols-3 gap-2">
+                      <input
+                        value={editApelacionSala}
+                        onChange={(e) => setEditApelacionSala(e.target.value)}
+                        placeholder="Sala"
+                        className="border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                      />
+                      <input
+                        value={editApelacionToca}
+                        onChange={(e) => setEditApelacionToca(e.target.value)}
+                        placeholder="Toca"
+                        className="border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                      />
+                      <input
+                        value={editApelacionTipo}
+                        onChange={(e) => setEditApelacionTipo(e.target.value)}
+                        placeholder="Tipo de apelación"
+                        className="border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                      />
+                      <input
+                        value={editApelacionComentario}
+                        onChange={(e) => setEditApelacionComentario(e.target.value)}
+                        placeholder="Comentario (para identificarla)"
+                        className="sm:col-span-3 border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={() => setEditandoApelacionId(null)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-navy-900/60 hover:bg-navy-900/5"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          onUpdateApelacion(a.id, {
+                            sala: editApelacionSala.trim(),
+                            toca: editApelacionToca.trim(),
+                            tipo: editApelacionTipo.trim(),
+                            comentario: editApelacionComentario.trim() || null,
+                          });
+                          setEditandoApelacionId(null);
+                        }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-navy-900 text-cream"
+                      >
+                        Guardar
+                      </button>
+                    </div>
+                  </li>
+                ) : (
+                  <li key={a.id} className="text-sm bg-emerald-50 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+                    <div className="text-navy-900/80">
+                      {a.sala && <span className="font-medium">{a.sala}</span>}
+                      {a.toca && <> · Toca {a.toca}</>}
+                      {a.tipo && <span className="text-navy-900/50"> ({a.tipo})</span>}
+                      {a.comentario && <div className="text-navy-900/50 text-xs italic mt-0.5">{a.comentario}</div>}
+                    </div>
+                    {!soloLectura && (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditandoApelacionId(a.id);
+                            setEditApelacionSala(a.sala ?? '');
+                            setEditApelacionToca(a.toca ?? '');
+                            setEditApelacionTipo(a.tipo ?? '');
+                            setEditApelacionComentario(a.comentario ?? '');
+                          }}
+                          className="text-navy-900/50 hover:text-navy-900"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm('¿Eliminar esta apelación?')) onEliminarApelacion(a.id);
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                )
+              )}
             </ul>
           )}
           {!soloLectura && (
@@ -472,15 +638,22 @@ export default function ExpedienteDetail({
               />
               <button
                 onClick={() => {
-                  onAddApelacion({ sala: nuevaApelacionSala.trim(), toca: nuevaApelacionToca.trim(), tipo: nuevaApelacionTipo.trim() });
+                  onAddApelacion({ sala: nuevaApelacionSala.trim(), toca: nuevaApelacionToca.trim(), tipo: nuevaApelacionTipo.trim(), comentario: nuevaApelacionComentario.trim() || null });
                   setNuevaApelacionSala('');
                   setNuevaApelacionToca('');
                   setNuevaApelacionTipo('');
+                  setNuevaApelacionComentario('');
                 }}
                 className="flex items-center gap-1.5 bg-navy-900 text-cream px-3 py-2 rounded-lg text-sm font-medium"
               >
                 <Plus size={14} /> Agregar
               </button>
+              <input
+                value={nuevaApelacionComentario}
+                onChange={(e) => setNuevaApelacionComentario(e.target.value)}
+                placeholder="Comentario (para identificarla, opcional)"
+                className="sm:col-span-4 border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+              />
             </div>
           )}
         </div>
@@ -521,14 +694,64 @@ export default function ExpedienteDetail({
             <p className="text-sm text-navy-900/40 italic">Sin actuaciones registradas todavía.</p>
           ) : (
             <ul className="space-y-2">
-              {expediente.bitacora.map((a) => (
-                <li key={a.id} className="text-sm bg-slate-50 rounded-lg px-3 py-2 flex justify-between gap-3">
-                  <span className="text-navy-900/80">{a.descripcion}</span>
-                  <span className="text-navy-900/40 text-xs shrink-0">
-                    {new Date(a.fecha).toLocaleDateString('es-MX')}
-                  </span>
-                </li>
-              ))}
+              {expediente.bitacora.map((a) =>
+                editandoActuacionId === a.id ? (
+                  <li key={a.id} className="text-sm bg-slate-50 rounded-lg px-3 py-2 space-y-2">
+                    <input
+                      value={editActuacionTexto}
+                      onChange={(e) => setEditActuacionTexto(e.target.value)}
+                      className="w-full border border-navy-900/10 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={() => setEditandoActuacionId(null)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-navy-900/60 hover:bg-navy-900/5"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (editActuacionTexto.trim()) onUpdateActuacion(a.id, editActuacionTexto.trim());
+                          setEditandoActuacionId(null);
+                        }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-navy-900 text-cream"
+                      >
+                        Guardar
+                      </button>
+                    </div>
+                  </li>
+                ) : (
+                  <li key={a.id} className="text-sm bg-slate-50 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+                    <span className="text-navy-900/80">{a.descripcion}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-navy-900/40 text-xs">
+                        {new Date(a.fecha).toLocaleDateString('es-MX')}
+                      </span>
+                      {!soloLectura && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditandoActuacionId(a.id);
+                              setEditActuacionTexto(a.descripcion);
+                            }}
+                            className="text-navy-900/50 hover:text-navy-900"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('¿Eliminar esta actuación?')) onEliminarActuacion(a.id);
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </li>
+                )
+              )}
             </ul>
           )}
         </div>
