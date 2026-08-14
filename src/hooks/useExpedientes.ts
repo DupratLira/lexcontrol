@@ -87,7 +87,7 @@ export function useExpedientes(userEmail: string | null) {
 
       const { data: amparoRows, error: amparoErr } = await supabase
         .from('amparos')
-        .select('id, expediente_id, numero, juzgado, tipo, created_at')
+        .select('id, expediente_id, numero, juzgado, tipo, comentario, created_at')
         .order('created_at', { ascending: false });
 
       if (!amparoErr && amparoRows) {
@@ -104,7 +104,7 @@ export function useExpedientes(userEmail: string | null) {
 
       const { data: apelacionRows, error: apelacionErr } = await supabase
         .from('apelaciones')
-        .select('id, expediente_id, sala, toca, tipo, created_at')
+        .select('id, expediente_id, sala, toca, tipo, comentario, created_at')
         .order('created_at', { ascending: false });
 
       if (!apelacionErr && apelacionRows) {
@@ -233,19 +233,58 @@ export function useExpedientes(userEmail: string | null) {
     [userEmail, load]
   );
 
+  const updateActuacion = useCallback(
+    async (actuacionId: string, descripcion: string) => {
+      const { error: err } = await supabase
+        .from('actuaciones')
+        .update({ descripcion })
+        .eq('id', actuacionId);
+      if (err) throw err;
+      await load();
+    },
+    [load]
+  );
+
+  const eliminarActuacion = useCallback(
+    async (actuacionId: string) => {
+      const { error: err } = await supabase.from('actuaciones').delete().eq('id', actuacionId);
+      if (err) throw err;
+      await load();
+    },
+    [load]
+  );
+
   const addAmparo = useCallback(
-    async (expedienteId: string, datos: { numero: string; juzgado: string; tipo: TipoAmparo }) => {
+    async (expedienteId: string, datos: { numero: string; juzgado: string; tipo: TipoAmparo; comentario?: string | null }) => {
       const { error: err } = await supabase.from('amparos').insert({
         expediente_id: expedienteId,
         numero: datos.numero || null,
         juzgado: datos.juzgado || null,
         tipo: datos.tipo,
+        comentario: datos.comentario || null,
         created_by_email: userEmail,
       });
       if (err) throw err;
       await load();
     },
     [userEmail, load]
+  );
+
+  const updateAmparo = useCallback(
+    async (amparoId: string, datos: { numero: string; juzgado: string; tipo: TipoAmparo; comentario?: string | null }) => {
+      const { error: err } = await supabase
+        .from('amparos')
+        .update({
+          numero: datos.numero || null,
+          juzgado: datos.juzgado || null,
+          tipo: datos.tipo,
+          comentario: datos.comentario || null,
+        })
+        .eq('id', amparoId);
+      if (err) throw err;
+      await load();
+    },
+    [load]
   );
 
   const eliminarAmparo = useCallback(
@@ -258,18 +297,36 @@ export function useExpedientes(userEmail: string | null) {
   );
 
   const addApelacion = useCallback(
-    async (expedienteId: string, datos: { sala: string; toca: string; tipo: string }) => {
+    async (expedienteId: string, datos: { sala: string; toca: string; tipo: string; comentario?: string | null }) => {
       const { error: err } = await supabase.from('apelaciones').insert({
         expediente_id: expedienteId,
         sala: datos.sala || null,
         toca: datos.toca || null,
         tipo: datos.tipo || null,
+        comentario: datos.comentario || null,
         created_by_email: userEmail,
       });
       if (err) throw err;
       await load();
     },
     [userEmail, load]
+  );
+
+  const updateApelacion = useCallback(
+    async (apelacionId: string, datos: { sala: string; toca: string; tipo: string; comentario?: string | null }) => {
+      const { error: err } = await supabase
+        .from('apelaciones')
+        .update({
+          sala: datos.sala || null,
+          toca: datos.toca || null,
+          tipo: datos.tipo || null,
+          comentario: datos.comentario || null,
+        })
+        .eq('id', apelacionId);
+      if (err) throw err;
+      await load();
+    },
+    [load]
   );
 
   const eliminarApelacion = useCallback(
@@ -289,9 +346,13 @@ export function useExpedientes(userEmail: string | null) {
     addExpediente,
     updateExpediente,
     addActuacion,
+    updateActuacion,
+    eliminarActuacion,
     addAmparo,
+    updateAmparo,
     eliminarAmparo,
     addApelacion,
+    updateApelacion,
     eliminarApelacion,
     concluirExpediente,
     eliminarExpediente,
