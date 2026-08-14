@@ -61,8 +61,8 @@ function Dashboard({
 }) {
   const {
     expedientes, loading, error, addExpediente, updateExpediente,
-    addActuacion, concluirExpediente, eliminarExpediente,
-    addAmparo, eliminarAmparo, addApelacion, eliminarApelacion,
+    addActuacion, updateActuacion, eliminarActuacion, concluirExpediente, eliminarExpediente,
+    addAmparo, updateAmparo, eliminarAmparo, addApelacion, updateApelacion, eliminarApelacion,
   } = useExpedientes(userEmail);
   const { isAdmin, rol } = useRolActual(userEmail);
   const esCliente = rol === 'cliente';
@@ -191,9 +191,13 @@ function Dashboard({
                     onBack={() => setSelectedId(null)}
                     onUpdate={(patch) => updateExpediente(selected.id, patch).catch((e) => alert('Error al guardar: ' + e.message))}
                     onAddActuacion={(desc) => addActuacion(selected.id, desc)}
+                    onUpdateActuacion={(actuacionId, desc) => updateActuacion(actuacionId, desc).catch((e) => alert('Error: ' + e.message))}
+                    onEliminarActuacion={(actuacionId) => eliminarActuacion(actuacionId).catch((e) => alert('Error: ' + e.message))}
                     onAddAmparo={(datos) => addAmparo(selected.id, datos).catch((e) => alert('Error al guardar: ' + e.message))}
+                    onUpdateAmparo={(amparoId, datos) => updateAmparo(amparoId, datos).catch((e) => alert('Error: ' + e.message))}
                     onEliminarAmparo={(amparoId) => eliminarAmparo(amparoId).catch((e) => alert('Error: ' + e.message))}
                     onAddApelacion={(datos) => addApelacion(selected.id, datos).catch((e) => alert('Error al guardar: ' + e.message))}
+                    onUpdateApelacion={(apelacionId, datos) => updateApelacion(apelacionId, datos).catch((e) => alert('Error: ' + e.message))}
                     onEliminarApelacion={(apelacionId) => eliminarApelacion(apelacionId).catch((e) => alert('Error: ' + e.message))}
                     onConcluir={(datos) => {
                       concluirExpediente(selected.id, datos).catch((e) => alert('Error: ' + e.message));
