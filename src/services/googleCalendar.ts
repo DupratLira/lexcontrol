@@ -165,6 +165,7 @@ export async function syncFechaLimiteToCalendar(params: {
       ].join('\n'),
       start: { date: params.fechaLimite },
       end: { date: addOneDay(params.fechaLimite) },
+      colorId: '9',
       reminders: {
         useDefault: false,
         overrides: [
@@ -233,6 +234,7 @@ export async function syncAudienciaToCalendar(params: {
       ].join('\n'),
       start: { dateTime: inicio.toISOString(), timeZone },
       end: { dateTime: fin.toISOString(), timeZone },
+      colorId: '9',
       reminders: {
         useDefault: false,
         overrides: [
