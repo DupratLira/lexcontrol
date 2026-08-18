@@ -164,6 +164,7 @@ export function useExpedientes(userEmail: string | null) {
       const payload = expedienteToPatch(patch);
       if (!hasConcluidoCol.current) delete payload.concluido;
       payload.updated_by_email = userEmail;
+      payload.updated_at = new Date().toISOString();
       const { error: err } = await supabase.from('expedientes').update(payload).eq('id', id);
       if (err) {
         await load();
