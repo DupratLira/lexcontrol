@@ -48,7 +48,6 @@ export interface ExpedienteRow {
   motivo_conclusion?: string | null;
   motivo_nota?: string | null;
   monto_conciliacion?: number | null;
-  updated_at?: string;
 }
 
 export function rowToExpediente(row: ExpedienteRow): Expediente {
@@ -165,6 +164,7 @@ export interface ExpedienteWritePayload {
   motivo_conclusion?: string | null;
   motivo_nota?: string | null;
   monto_conciliacion?: number | null;
+  updated_at?: string;
 }
 
 export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePayload {
