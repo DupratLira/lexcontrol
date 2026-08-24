@@ -13,10 +13,11 @@ export function isVencimientoUrgente(exp: Expediente): boolean {
 
 export function isCongelado(exp: Expediente): boolean {
   if (exp.concluido) return false;
-  const ultimaActuacion = exp.bitacora.length
-    ? exp.bitacora.reduce((max, a) => (a.fecha > max ? a.fecha : max), exp.bitacora[0].fecha)
-    : exp.creadoEn;
-  const dias = (Date.now() - new Date(ultimaActuacion).getTime()) / DAY_MS;
+  const fechas = exp.bitacora.map((a) => a.fecha);
+  fechas.push(exp.creadoEn);
+  if (exp.actualizadoEn) fechas.push(exp.actualizadoEn);
+  const ultimaActividad = fechas.reduce((max, f) => (f > max ? f : max), fechas[0]);
+  const dias = (Date.now() - new Date(ultimaActividad).getTime()) / DAY_MS;
   return dias > 30;
 }
 
