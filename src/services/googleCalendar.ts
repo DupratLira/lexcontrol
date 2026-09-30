@@ -220,7 +220,8 @@ export async function syncAudienciaToCalendar(params: {
     // hora del evento sea siempre correcta sin importar como este configurado
     // el celular de quien sincroniza. Mexico ya no usa horario de verano.
     const timeZone = 'America/Mexico_City';
-    const inicio = new Date(`${params.audienciaFecha}T${params.audienciaHora}:00-06:00`);
+    const horaNormalizada = params.audienciaHora.slice(0, 5);
+    const inicio = new Date(`${params.audienciaFecha}T${horaNormalizada}:00-06:00`);
     const fin = new Date(inicio.getTime() + 60 * 60 * 1000);
 
     const eventPayload = {
