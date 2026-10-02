@@ -258,10 +258,16 @@ export default function ExpedienteDetail({
                     demandado: local.demandado,
                     proximoARealizar: local.proximoARealizar,
                     fechaLimite: local.fechaLimite,
+                    existingEventId: local.gcalFechaLimiteEventId,
                   });
                   if (result.success) {
                     setSyncState('success');
                     setSyncEventUrl(result.eventUrl ?? null);
+                    if (result.eventId && result.eventId !== local.gcalFechaLimiteEventId) {
+                      const actualizado = { ...local, gcalFechaLimiteEventId: result.eventId };
+                      setLocal(actualizado);
+                      onUpdate(actualizado);
+                    }
                   } else {
                     setSyncState('error');
                     setSyncError(result.error ?? 'Error desconocido al conectar con Google Calendar.');
@@ -335,10 +341,16 @@ export default function ExpedienteDetail({
                         demandado: local.demandado,
                         audienciaFecha: local.audienciaFecha,
                         audienciaHora: local.audienciaHora,
+                        existingEventId: local.gcalAudienciaEventId,
                       });
                       if (result.success) {
                         setSyncAudienciaState('success');
                         setSyncAudienciaEventUrl(result.eventUrl ?? null);
+                        if (result.eventId && result.eventId !== local.gcalAudienciaEventId) {
+                          const actualizado = { ...local, gcalAudienciaEventId: result.eventId };
+                          setLocal(actualizado);
+                          onUpdate(actualizado);
+                        }
                       } else {
                         setSyncAudienciaState('error');
                         setSyncAudienciaError(result.error ?? 'Error desconocido al conectar con Google Calendar.');
