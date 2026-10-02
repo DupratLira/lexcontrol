@@ -140,6 +140,9 @@ export function useExpedientes(userEmail: string | null) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'apelaciones' }, () => {
         load();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'actuaciones' }, () => {
+        load();
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
