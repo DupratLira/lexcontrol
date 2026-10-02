@@ -131,6 +131,7 @@ async function getAccessToken(): Promise<string> {
 export interface CalendarSyncResult {
   success: boolean;
   eventUrl?: string;
+  eventId?: string;
   error?: string;
 }
 
@@ -138,6 +139,62 @@ function addOneDay(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
   d.setDate(d.getDate() + 1);
   return d.toISOString().split('T')[0];
+}
+
+async function createOrUpdateEvent(
+  accessToken: string,
+  eventPayload: Record<string, unknown>,
+  existingEventId?: string | null
+): Promise<CalendarSyncResult> {
+  const base = `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(CALENDAR_ID)}/events`;
+  let response: Response;
+
+  if (existingEventId) {
+    // Ya existe un evento para este expediente: lo actualizamos en vez de
+    // crear uno nuevo, para no llenar la agenda de eventos duplicados cada
+    // vez que alguien vuelve a sincronizar.
+    response = await fetch(`${base}/${encodeURIComponent(existingEventId)}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventPayload),
+    });
+
+    if (response.status === 404 || response.status === 410) {
+      // El evento fue borrado manualmente del calendario; creamos uno nuevo.
+      response = await fetch(base, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(eventPayload),
+      });
+    }
+  } else {
+    response = await fetch(base, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventPayload),
+    });
+  }
+
+  if (!response.ok) {
+    if (response.status === 401) disconnectGoogleCalendar();
+    const errBody = await response.json().catch(() => null);
+    return {
+      success: false,
+      error: errBody?.error?.message || `Error HTTP ${response.status}`,
+    };
+  }
+
+  const data = await response.json();
+  return { success: true, eventUrl: data.htmlLink, eventId: data.id };
 }
 
 export async function syncFechaLimiteToCalendar(params: {
@@ -148,12 +205,13 @@ export async function syncFechaLimiteToCalendar(params: {
   demandado: string;
   proximoARealizar: string;
   fechaLimite: string;
+  existingEventId?: string | null;
 }): Promise<CalendarSyncResult> {
   try {
     const accessToken = await getAccessToken();
 
     const eventPayload = {
-      summary: `Vencimiento: ${params.numero} — ${params.actor} vs ${params.demandado}`,
+      summary: `Vencimiento: ${params.numero} (${params.juzgado}) — ${params.actor} vs ${params.demandado}`,
       description: [
         `Expediente: ${params.numero}`,
         `Materia: ${params.materia}`,
@@ -175,26 +233,7 @@ export async function syncFechaLimiteToCalendar(params: {
       },
     };
 
-    const response = await fetch(`${CALENDAR_API_BASE}/calendars/${encodeURIComponent(CALENDAR_ID)}/events`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(eventPayload),
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) disconnectGoogleCalendar();
-      const errBody = await response.json().catch(() => null);
-      return {
-        success: false,
-        error: errBody?.error?.message || `Error HTTP ${response.status}`,
-      };
-    }
-
-    const data = await response.json();
-    return { success: true, eventUrl: data.htmlLink };
+    return await createOrUpdateEvent(accessToken, eventPayload, params.existingEventId);
   } catch (err) {
     return {
       success: false,
@@ -211,6 +250,7 @@ export async function syncAudienciaToCalendar(params: {
   demandado: string;
   audienciaFecha: string;
   audienciaHora: string;
+  existingEventId?: string | null;
 }): Promise<CalendarSyncResult> {
   try {
     const accessToken = await getAccessToken();
@@ -225,7 +265,7 @@ export async function syncAudienciaToCalendar(params: {
     const fin = new Date(inicio.getTime() + 60 * 60 * 1000);
 
     const eventPayload = {
-      summary: `Audiencia: ${params.numero} — ${params.actor} vs ${params.demandado}`,
+      summary: `Audiencia: ${params.numero} (${params.juzgado}) — ${params.actor} vs ${params.demandado}`,
       description: [
         `Expediente: ${params.numero}`,
         `Materia: ${params.materia}`,
@@ -245,26 +285,7 @@ export async function syncAudienciaToCalendar(params: {
       },
     };
 
-    const response = await fetch(`${CALENDAR_API_BASE}/calendars/${encodeURIComponent(CALENDAR_ID)}/events`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(eventPayload),
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) disconnectGoogleCalendar();
-      const errBody = await response.json().catch(() => null);
-      return {
-        success: false,
-        error: errBody?.error?.message || `Error HTTP ${response.status}`,
-      };
-    }
-
-    const data = await response.json();
-    return { success: true, eventUrl: data.htmlLink };
+    return await createOrUpdateEvent(accessToken, eventPayload, params.existingEventId);
   } catch (err) {
     return {
       success: false,
