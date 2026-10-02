@@ -11,6 +11,7 @@ export const EXPEDIENTE_COLUMNS = [
   'created_at', 'fecha_limite', 'fecha_situacion', 'es_escrito_pendiente',
   'escrito_tipo', 'escrito_fecha_limite', 'created_by_email', 'updated_by_email',
   'updated_at', 'es_audiencia', 'audiencia_fecha', 'audiencia_hora',
+  'gcal_fecha_limite_event_id', 'gcal_audiencia_event_id',
 ].join(',');
 
 // La columna `concluido` (fecha y motivo de conclusión incluidos) es opcional:
@@ -43,6 +44,8 @@ export interface ExpedienteRow {
   es_audiencia: boolean | null;
   audiencia_fecha: string | null;
   audiencia_hora: string | null;
+  gcal_fecha_limite_event_id: string | null;
+  gcal_audiencia_event_id: string | null;
   concluido?: boolean | null;
   concluido_en?: string | null;
   motivo_conclusion?: string | null;
@@ -78,6 +81,8 @@ export function rowToExpediente(row: ExpedienteRow): Expediente {
     tieneAudiencia: !!row.es_audiencia,
     audienciaFecha: row.audiencia_fecha,
     audienciaHora: row.audiencia_hora,
+    gcalFechaLimiteEventId: row.gcal_fecha_limite_event_id ?? null,
+    gcalAudienciaEventId: row.gcal_audiencia_event_id ?? null,
 
     concluido: !!row.concluido,
     concluidoEn: row.concluido_en ?? null,
@@ -157,6 +162,8 @@ export interface ExpedienteWritePayload {
   es_audiencia?: boolean;
   audiencia_fecha?: string | null;
   audiencia_hora?: string | null;
+  gcal_fecha_limite_event_id?: string | null;
+  gcal_audiencia_event_id?: string | null;
   updated_by_email?: string | null;
   created_by_email?: string | null;
   concluido?: boolean;
@@ -187,6 +194,8 @@ export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePa
   if (patch.tieneAudiencia !== undefined) out.es_audiencia = patch.tieneAudiencia;
   if (patch.audienciaFecha !== undefined) out.audiencia_fecha = patch.audienciaFecha;
   if (patch.audienciaHora !== undefined) out.audiencia_hora = patch.audienciaHora;
+  if (patch.gcalFechaLimiteEventId !== undefined) out.gcal_fecha_limite_event_id = patch.gcalFechaLimiteEventId;
+  if (patch.gcalAudienciaEventId !== undefined) out.gcal_audiencia_event_id = patch.gcalAudienciaEventId;
   if (patch.concluido !== undefined) out.concluido = patch.concluido;
   if (patch.concluidoEn !== undefined) out.concluido_en = patch.concluidoEn;
   if (patch.motivoConclusion !== undefined) out.motivo_conclusion = patch.motivoConclusion;
