@@ -3,21 +3,26 @@ import { Lock, Mail } from 'lucide-react';
 
 interface Props {
   onSignIn: (email: string, password: string) => Promise<string | null>;
+  onResetPassword: (email: string) => Promise<string | null>;
 }
 
-export default function Login({ onSignIn }: Props) {
+export default function Login({ onSignIn, onResetPassword }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'login' | 'reset'>('login');
+  const [info, setInfo] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const err = await onSignIn(email, password);
+    setInfo(null);
+    const err = mode === 'reset' ? await onResetPassword(email) : await onSignIn(email, password);
     setLoading(false);
     if (err) setError(err);
+    else if (mode === 'reset') setInfo('Si el correo está registrado, te enviamos un enlace para crear una nueva contraseña. Revisa tu bandeja de entrada y spam.');
   };
 
   return (
@@ -37,6 +42,7 @@ export default function Login({ onSignIn }: Props) {
         </div>
 
         <form onSubmit={submit} className="bg-white rounded-xl shadow-xl p-6 space-y-4">
+          {info && <div className="text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">{info}</div>}
           {error && <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
 
           <div>
@@ -54,6 +60,7 @@ export default function Login({ onSignIn }: Props) {
             </div>
           </div>
 
+          {mode === 'login' && (
           <div>
             <label className="block text-[11px] font-semibold tracking-wide text-navy-900/50 mb-1">CONTRASEÑA</label>
             <div className="relative">
@@ -68,13 +75,22 @@ export default function Login({ onSignIn }: Props) {
               />
             </div>
           </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-navy-900 hover:bg-navy-800 disabled:opacity-60 text-cream rounded-lg py-2.5 text-sm font-medium transition-colors"
           >
-            {loading ? 'Ingresando...' : 'Ingresar'}
+            {loading ? (mode === 'reset' ? 'Enviando...' : 'Ingresando...') : mode === 'reset' ? 'Enviar enlace de recuperación' : 'Ingresar'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setMode(mode === 'login' ? 'reset' : 'login'); setError(null); setInfo(null); }}
+            className="w-full text-center text-xs text-navy-900/60 hover:text-navy-900 underline"
+          >
+            {mode === 'login' ? '¿Olvidaste tu contraseña?' : 'Volver a iniciar sesión'}
           </button>
         </form>
 
@@ -84,6 +100,74 @@ export default function Login({ onSignIn }: Props) {
         <p className="text-center text-[11px] text-navy-300/40 mt-2">
           Insurgentes Sur 300, Roma Norte, CDMX · 55 5160-1668
         </p>
+      </div>
+    </div>
+  );
+}
+
+export function NuevaContrasena({ onSubmit }: { onSubmit: (password: string) => Promise<string | null> }) {
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+    if (password !== confirm) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+    setLoading(true);
+    const err = await onSubmit(password);
+    setLoading(false);
+    if (err) setError(err);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-navy-800 px-4 py-8">
+      <div className="relative w-full max-w-sm">
+        <div className="flex flex-col items-center mb-8">
+          <h1 className="font-serif text-3xl font-bold text-cream uppercase tracking-wide text-center">Duprat Lira</h1>
+          <p className="text-gold-300/80 text-xs font-semibold uppercase tracking-[0.3em] mt-1">Abogados</p>
+          <p className="text-navy-200/60 text-[11px] mt-3 font-medium tracking-wide">Crea tu nueva contraseña</p>
+        </div>
+        <form onSubmit={submit} className="bg-white rounded-xl shadow-xl p-6 space-y-4">
+          {error && <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
+          <div>
+            <label className="block text-[11px] font-semibold tracking-wide text-navy-900/50 mb-1">NUEVA CONTRASEÑA</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-navy-900/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+              placeholder="Mínimo 8 caracteres"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold tracking-wide text-navy-900/50 mb-1">CONFIRMAR CONTRASEÑA</label>
+            <input
+              type="password"
+              required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="w-full border border-navy-900/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+              placeholder="Repite la contraseña"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-navy-900 hover:bg-navy-800 disabled:opacity-60 text-cream rounded-lg py-2.5 text-sm font-medium transition-colors"
+          >
+            {loading ? 'Guardando...' : 'Guardar contraseña'}
+          </button>
+        </form>
       </div>
     </div>
   );
