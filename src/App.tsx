@@ -12,7 +12,7 @@ import CalendarioView from './components/CalendarioView';
 import AudienciasView from './components/AudienciasView';
 import EscritosView from './components/EscritosView';
 import InstallPrompt from './components/InstallPrompt';
-import Login from './components/Login';
+import Login, { NuevaContrasena } from './components/Login';
 import AdminUsuarios from './components/AdminUsuarios';
 import ReportesView from './components/ReportesView';
 import Privacidad from './components/Privacidad';
@@ -33,7 +33,17 @@ export default function App() {
 }
 
 function Authenticated() {
-  const { session, loading: authLoading, signIn, signOut, email, userId } = useAuth();
+  const {
+    session,
+    loading: authLoading,
+    signIn,
+    signOut,
+    email,
+    userId,
+    recovering,
+    resetPassword,
+    updatePassword,
+  } = useAuth();
 
   if (authLoading) {
     return (
@@ -43,8 +53,17 @@ function Authenticated() {
     );
   }
 
+  if (recovering && session) {
+    return <NuevaContrasena onSubmit={async (p) => (await updatePassword(p))?.message ?? null} />;
+  }
+
   if (!session) {
-    return <Login onSignIn={async (e, p) => (await signIn(e, p))?.message ?? null} />;
+    return (
+      <Login
+        onSignIn={async (e, p) => (await signIn(e, p))?.message ?? null}
+        onResetPassword={async (e) => (await resetPassword(e))?.message ?? null}
+      />
+    );
   }
 
   return <Dashboard userEmail={email ?? ''} userId={userId} onLogout={signOut} />;
