@@ -100,7 +100,7 @@ export default function ExpedienteDetail({
 
       <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="w-full sm:w-auto sm:flex-1 min-w-0">
             <select
               value={local.materia}
               disabled={soloLectura}
@@ -118,7 +118,7 @@ export default function ExpedienteDetail({
               className="block text-2xl font-bold text-navy-900 bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-gold-400 rounded px-1 -ml-1 disabled:opacity-100"
             />
             <div className="flex flex-wrap gap-2 mt-2">
-              <label className="flex-[2_1_320px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
+              <label className="w-full sm:w-auto sm:flex-[2_1_320px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
                 <div className="flex-1 min-w-0">
                   <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Juzgado</span>
                   <textarea
@@ -147,7 +147,7 @@ export default function ExpedienteDetail({
                   </svg>
                 )}
               </label>
-              <label className="w-44 flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
+              <label className="w-full sm:w-44 flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
                 <div className="flex-1 min-w-0">
                   <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Ciudad / Estado</span>
                   <textarea
@@ -176,7 +176,7 @@ export default function ExpedienteDetail({
                   </svg>
                 )}
               </label>
-              <label className="flex-[1_1_240px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
+              <label className="w-full sm:w-auto sm:flex-[1_1_240px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
                 <div className="flex-1 min-w-0">
                   <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Tipo de juicio</span>
                   <textarea
