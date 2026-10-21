@@ -125,6 +125,14 @@ export default function ExpedienteDetail({
                 placeholder="Juzgado"
                 className="bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-gold-400 rounded px-1 disabled:opacity-100"
               />
+              <span>·</span>
+              <input
+                value={local.ciudad}
+                disabled={soloLectura}
+                onChange={(e) => patch('ciudad', e.target.value)}
+                placeholder="Ciudad / Estado"
+                className="w-32 bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-gold-400 rounded px-1 disabled:opacity-100"
+              />
               <span>—</span>
               <input
                 value={local.tipoJuicio}
