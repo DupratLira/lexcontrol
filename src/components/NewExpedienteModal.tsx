@@ -13,6 +13,7 @@ export default function NewExpedienteModal({ onClose, onCreate }: Props) {
   const [materia, setMateria] = useState<Materia>('Civil');
   const [juzgado, setJuzgado] = useState('');
   const [numero, setNumero] = useState('');
+  const [ciudad, setCiudad] = useState('CDMX');
   const [tipoJuicio, setTipoJuicio] = useState('');
   const [actor, setActor] = useState('');
   const [demandado, setDemandado] = useState('');
@@ -29,6 +30,7 @@ export default function NewExpedienteModal({ onClose, onCreate }: Props) {
     onCreate({
       materia,
       juzgado,
+      ciudad: ciudad.trim() || 'CDMX',
       numero,
       tipoJuicio,
       actor,
@@ -73,6 +75,15 @@ export default function NewExpedienteModal({ onClose, onCreate }: Props) {
               <input
                 value={juzgado}
                 onChange={(e) => setJuzgado(e.target.value)}
+                className="w-full border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold tracking-wide text-navy-900/50 mb-1">CIUDAD / ESTADO</label>
+              <input
+                value={ciudad}
+                onChange={(e) => setCiudad(e.target.value)}
+                placeholder="CDMX, Estado de México..."
                 className="w-full border border-navy-900/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40"
               />
             </div>
