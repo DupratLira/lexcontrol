@@ -117,30 +117,61 @@ export default function ExpedienteDetail({
               onChange={(e) => patch('numero', e.target.value)}
               className="block text-2xl font-bold text-navy-900 bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-gold-400 rounded px-1 -ml-1 disabled:opacity-100"
             />
-            <div className="flex flex-wrap gap-2 mt-1 text-sm text-navy-900/50">
-              <input
-                value={local.juzgado}
-                disabled={soloLectura}
-                onChange={(e) => patch('juzgado', e.target.value)}
-                placeholder="Juzgado"
-                className="bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-gold-400 rounded px-1 disabled:opacity-100"
-              />
-              <span>·</span>
-              <input
-                value={local.ciudad}
-                disabled={soloLectura}
-                onChange={(e) => patch('ciudad', e.target.value)}
-                placeholder="Ciudad / Estado"
-                className="w-32 bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-gold-400 rounded px-1 disabled:opacity-100"
-              />
-              <span>—</span>
-              <input
-                value={local.tipoJuicio}
-                disabled={soloLectura}
-                onChange={(e) => patch('tipoJuicio', e.target.value)}
-                placeholder="Tipo de juicio"
-                className="bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-gold-400 rounded px-1 flex-1 min-w-[140px] disabled:opacity-100"
-              />
+            <div className="flex flex-wrap gap-2 mt-2">
+              <label className="flex-1 min-w-[200px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
+                <div className="flex-1 min-w-0">
+                  <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Juzgado</span>
+                  <input
+                    value={local.juzgado}
+                    disabled={soloLectura}
+                    onChange={(e) => patch('juzgado', e.target.value)}
+                    placeholder="Juzgado"
+                    className="w-full bg-transparent border-0 p-0 text-sm font-medium text-navy-900 focus:outline-none disabled:opacity-100"
+                  />
+                </div>
+                {!soloLectura && (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-gold-500" aria-hidden="true">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                )}
+              </label>
+              <label className="w-44 flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
+                <div className="flex-1 min-w-0">
+                  <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Ciudad / Estado</span>
+                  <input
+                    value={local.ciudad}
+                    disabled={soloLectura}
+                    onChange={(e) => patch('ciudad', e.target.value)}
+                    placeholder="Ciudad / Estado"
+                    className="w-full bg-transparent border-0 p-0 text-sm font-medium text-navy-900 focus:outline-none disabled:opacity-100"
+                  />
+                </div>
+                {!soloLectura && (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-gold-500" aria-hidden="true">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                )}
+              </label>
+              <label className="flex-1 min-w-[160px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
+                <div className="flex-1 min-w-0">
+                  <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Tipo de juicio</span>
+                  <input
+                    value={local.tipoJuicio}
+                    disabled={soloLectura}
+                    onChange={(e) => patch('tipoJuicio', e.target.value)}
+                    placeholder="Tipo de juicio"
+                    className="w-full bg-transparent border-0 p-0 text-sm font-medium text-navy-900 focus:outline-none disabled:opacity-100"
+                  />
+                </div>
+                {!soloLectura && (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-gold-500" aria-hidden="true">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                )}
+              </label>
             </div>
           </div>
           {!soloLectura && (
