@@ -11,7 +11,7 @@ export const EXPEDIENTE_COLUMNS = [
   'created_at', 'fecha_limite', 'fecha_situacion', 'es_escrito_pendiente',
   'escrito_tipo', 'escrito_fecha_limite', 'created_by_email', 'updated_by_email',
   'updated_at', 'es_audiencia', 'audiencia_fecha', 'audiencia_hora',
-  'gcal_fecha_limite_event_id', 'gcal_audiencia_event_id',
+  'gcal_fecha_limite_event_id', 'gcal_audiencia_event_id', 'ciudad',
 ].join(',');
 
 // La columna `concluido` (fecha y motivo de conclusión incluidos) es opcional:
@@ -46,6 +46,7 @@ export interface ExpedienteRow {
   audiencia_hora: string | null;
   gcal_fecha_limite_event_id: string | null;
   gcal_audiencia_event_id: string | null;
+  ciudad?: string | null;
   concluido?: boolean | null;
   concluido_en?: string | null;
   motivo_conclusion?: string | null;
@@ -59,7 +60,7 @@ export function rowToExpediente(row: ExpedienteRow): Expediente {
     materia: (row.materia as Materia) || 'Civil',
     numero: row.numero_expediente ?? '',
     juzgado: row.juzgado ?? '',
-    ciudad: 'CDMX',
+    ciudad: row.ciudad || 'CDMX',
     tipoJuicio: row.tipo_juicio ?? '',
     actor: row.actor ?? '',
     demandado: row.demandado ?? '',
@@ -164,6 +165,7 @@ export interface ExpedienteWritePayload {
   audiencia_hora?: string | null;
   gcal_fecha_limite_event_id?: string | null;
   gcal_audiencia_event_id?: string | null;
+  ciudad?: string | null;
   updated_by_email?: string | null;
   created_by_email?: string | null;
   concluido?: boolean;
@@ -196,6 +198,7 @@ export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePa
   if (patch.audienciaHora !== undefined) out.audiencia_hora = patch.audienciaHora;
   if (patch.gcalFechaLimiteEventId !== undefined) out.gcal_fecha_limite_event_id = patch.gcalFechaLimiteEventId;
   if (patch.gcalAudienciaEventId !== undefined) out.gcal_audiencia_event_id = patch.gcalAudienciaEventId;
+  if (patch.ciudad !== undefined) out.ciudad = patch.ciudad;
   if (patch.concluido !== undefined) out.concluido = patch.concluido;
   if (patch.concluidoEn !== undefined) out.concluido_en = patch.concluidoEn;
   if (patch.motivoConclusion !== undefined) out.motivo_conclusion = patch.motivoConclusion;
