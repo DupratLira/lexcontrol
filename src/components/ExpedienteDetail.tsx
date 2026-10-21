@@ -118,15 +118,26 @@ export default function ExpedienteDetail({
               className="block text-2xl font-bold text-navy-900 bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-gold-400 rounded px-1 -ml-1 disabled:opacity-100"
             />
             <div className="flex flex-wrap gap-2 mt-2">
-              <label className="flex-1 min-w-[200px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
+              <label className="flex-[2_1_320px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
                 <div className="flex-1 min-w-0">
                   <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Juzgado</span>
-                  <input
+                  <textarea
+                    rows={1}
                     value={local.juzgado}
                     disabled={soloLectura}
-                    onChange={(e) => patch('juzgado', e.target.value)}
+                    onChange={(e) => patch('juzgado', e.target.value.replace(/\n/g, ' '))}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = 'auto';
+                      e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        el.style.height = 'auto';
+                        el.style.height = el.scrollHeight + 'px';
+                      }
+                    }}
                     placeholder="Juzgado"
-                    className="w-full bg-transparent border-0 p-0 text-sm font-medium text-navy-900 focus:outline-none disabled:opacity-100"
+                    className="block w-full resize-none overflow-hidden bg-transparent border-0 p-0 text-sm font-medium leading-snug text-navy-900 break-words focus:outline-none disabled:opacity-100"
                   />
                 </div>
                 {!soloLectura && (
@@ -139,12 +150,23 @@ export default function ExpedienteDetail({
               <label className="w-44 flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
                 <div className="flex-1 min-w-0">
                   <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Ciudad / Estado</span>
-                  <input
+                  <textarea
+                    rows={1}
                     value={local.ciudad}
                     disabled={soloLectura}
-                    onChange={(e) => patch('ciudad', e.target.value)}
+                    onChange={(e) => patch('ciudad', e.target.value.replace(/\n/g, ' '))}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = 'auto';
+                      e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        el.style.height = 'auto';
+                        el.style.height = el.scrollHeight + 'px';
+                      }
+                    }}
                     placeholder="Ciudad / Estado"
-                    className="w-full bg-transparent border-0 p-0 text-sm font-medium text-navy-900 focus:outline-none disabled:opacity-100"
+                    className="block w-full resize-none overflow-hidden bg-transparent border-0 p-0 text-sm font-medium leading-snug text-navy-900 break-words focus:outline-none disabled:opacity-100"
                   />
                 </div>
                 {!soloLectura && (
@@ -154,15 +176,26 @@ export default function ExpedienteDetail({
                   </svg>
                 )}
               </label>
-              <label className="flex-1 min-w-[160px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
+              <label className="flex-[1_1_240px] flex items-center gap-2 bg-white border border-navy-900/20 hover:border-gold-400 focus-within:border-gold-500 focus-within:ring-2 focus-within:ring-gold-400/30 rounded-lg px-3 py-1.5 cursor-text transition-colors">
                 <div className="flex-1 min-w-0">
                   <span className="block text-[10px] font-semibold tracking-wide text-navy-900/50 uppercase">Tipo de juicio</span>
-                  <input
+                  <textarea
+                    rows={1}
                     value={local.tipoJuicio}
                     disabled={soloLectura}
-                    onChange={(e) => patch('tipoJuicio', e.target.value)}
+                    onChange={(e) => patch('tipoJuicio', e.target.value.replace(/\n/g, ' '))}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = 'auto';
+                      e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        el.style.height = 'auto';
+                        el.style.height = el.scrollHeight + 'px';
+                      }
+                    }}
                     placeholder="Tipo de juicio"
-                    className="w-full bg-transparent border-0 p-0 text-sm font-medium text-navy-900 focus:outline-none disabled:opacity-100"
+                    className="block w-full resize-none overflow-hidden bg-transparent border-0 p-0 text-sm font-medium leading-snug text-navy-900 break-words focus:outline-none disabled:opacity-100"
                   />
                 </div>
                 {!soloLectura && (
