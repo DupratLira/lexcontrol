@@ -82,6 +82,8 @@ export interface Expediente {
   tieneAudiencia: boolean;
   audienciaFecha: string | null;
   audienciaHora: string | null;
+  audienciaTipo: string | null;
+  audienciaComentario: string | null;
   gcalFechaLimiteEventId: string | null;
   gcalAudienciaEventId: string | null;
 
