@@ -395,6 +395,43 @@ export default function ExpedienteDetail({
                   className="border border-rose-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400/40 disabled:opacity-100"
                 />
               </div>
+              <div className="grid gap-2">
+                <label className="block">
+                  <span className="block text-[11px] font-semibold tracking-wide text-rose-800/70 mb-1">TIPO DE AUDIENCIA</span>
+                  <input
+                    list="tipos-audiencia"
+                    value={local.audienciaTipo ?? ''}
+                    disabled={soloLectura}
+                    onChange={(e) => patch('audienciaTipo', e.target.value || null)}
+                    placeholder="Ej. Conciliación, Desahogo de pruebas, Alegatos..."
+                    className="w-full bg-white border border-rose-200 rounded-lg px-3 py-2 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:opacity-100"
+                  />
+                  <datalist id="tipos-audiencia">
+                    <option value="Conciliación" />
+                    <option value="Audiencia inicial" />
+                    <option value="Audiencia preliminar" />
+                    <option value="Audiencia de juicio" />
+                    <option value="Desahogo de pruebas" />
+                    <option value="Alegatos" />
+                    <option value="Audiencia de ratificación" />
+                    <option value="Audiencia de convivencia" />
+                    <option value="Audiencia de lectura de sentencia" />
+                    <option value="Audiencia constitucional" />
+                    <option value="Audiencia incidental" />
+                  </datalist>
+                </label>
+                <label className="block">
+                  <span className="block text-[11px] font-semibold tracking-wide text-rose-800/70 mb-1">COMENTARIO</span>
+                  <textarea
+                    rows={2}
+                    value={local.audienciaComentario ?? ''}
+                    disabled={soloLectura}
+                    onChange={(e) => patch('audienciaComentario', e.target.value || null)}
+                    placeholder="De qué trata la audiencia, qué llevar, pendientes..."
+                    className="w-full bg-white border border-rose-200 rounded-lg px-3 py-2 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:opacity-100"
+                  />
+                </label>
+              </div>
               {!soloLectura && (
                 <div className="pl-9 space-y-2">
                   <button
@@ -413,6 +450,8 @@ export default function ExpedienteDetail({
                         demandado: local.demandado,
                         audienciaFecha: local.audienciaFecha,
                         audienciaHora: local.audienciaHora,
+                        tipo: local.audienciaTipo,
+                        comentario: local.audienciaComentario,
                         existingEventId: local.gcalAudienciaEventId,
                       });
                       if (result.success) {
