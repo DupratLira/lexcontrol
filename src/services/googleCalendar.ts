@@ -250,6 +250,8 @@ export async function syncAudienciaToCalendar(params: {
   demandado: string;
   audienciaFecha: string;
   audienciaHora: string;
+  tipo?: string | null;
+  comentario?: string | null;
   existingEventId?: string | null;
 }): Promise<CalendarSyncResult> {
   try {
@@ -265,13 +267,15 @@ export async function syncAudienciaToCalendar(params: {
     const fin = new Date(inicio.getTime() + 60 * 60 * 1000);
 
     const eventPayload = {
-      summary: `Audiencia: ${params.numero} (${params.juzgado}) — ${params.actor} vs ${params.demandado}`,
+      summary: `Audiencia${params.tipo?.trim() ? ` ${params.tipo.trim()}` : ''}: ${params.numero} (${params.juzgado}) — ${params.actor} vs ${params.demandado}`,
       description: [
         `Expediente: ${params.numero}`,
         `Materia: ${params.materia}`,
         `Juzgado: ${params.juzgado}`,
         `Actor: ${params.actor}`,
         `Demandado: ${params.demandado}`,
+        ...(params.tipo?.trim() ? [`Tipo de audiencia: ${params.tipo.trim()}`] : []),
+        ...(params.comentario?.trim() ? [`Comentario: ${params.comentario.trim()}`] : []),
       ].join('\n'),
       start: { dateTime: inicio.toISOString(), timeZone },
       end: { dateTime: fin.toISOString(), timeZone },
