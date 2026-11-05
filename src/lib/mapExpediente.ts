@@ -10,7 +10,7 @@ export const EXPEDIENTE_COLUMNS = [
   'id_cliente', 'tipo_juicio', 'exp_fisico', 'estatus', 'proximo_a_realizar',
   'created_at', 'fecha_limite', 'fecha_situacion', 'es_escrito_pendiente',
   'escrito_tipo', 'escrito_fecha_limite', 'created_by_email', 'updated_by_email',
-  'updated_at', 'es_audiencia', 'audiencia_fecha', 'audiencia_hora',
+  'updated_at', 'es_audiencia', 'audiencia_fecha', 'audiencia_hora', 'audiencia_tipo', 'audiencia_comentario',
   'gcal_fecha_limite_event_id', 'gcal_audiencia_event_id', 'ciudad',
 ].join(',');
 
@@ -44,6 +44,8 @@ export interface ExpedienteRow {
   es_audiencia: boolean | null;
   audiencia_fecha: string | null;
   audiencia_hora: string | null;
+  audiencia_tipo?: string | null;
+  audiencia_comentario?: string | null;
   gcal_fecha_limite_event_id: string | null;
   gcal_audiencia_event_id: string | null;
   ciudad?: string | null;
@@ -82,6 +84,8 @@ export function rowToExpediente(row: ExpedienteRow): Expediente {
     tieneAudiencia: !!row.es_audiencia,
     audienciaFecha: row.audiencia_fecha,
     audienciaHora: row.audiencia_hora,
+    audienciaTipo: row.audiencia_tipo ?? null,
+    audienciaComentario: row.audiencia_comentario ?? null,
     gcalFechaLimiteEventId: row.gcal_fecha_limite_event_id ?? null,
     gcalAudienciaEventId: row.gcal_audiencia_event_id ?? null,
 
@@ -163,6 +167,8 @@ export interface ExpedienteWritePayload {
   es_audiencia?: boolean;
   audiencia_fecha?: string | null;
   audiencia_hora?: string | null;
+  audiencia_tipo?: string | null;
+  audiencia_comentario?: string | null;
   gcal_fecha_limite_event_id?: string | null;
   gcal_audiencia_event_id?: string | null;
   ciudad?: string | null;
@@ -196,6 +202,8 @@ export function expedienteToPatch(patch: Partial<Expediente>): ExpedienteWritePa
   if (patch.tieneAudiencia !== undefined) out.es_audiencia = patch.tieneAudiencia;
   if (patch.audienciaFecha !== undefined) out.audiencia_fecha = patch.audienciaFecha;
   if (patch.audienciaHora !== undefined) out.audiencia_hora = patch.audienciaHora;
+  if (patch.audienciaTipo !== undefined) out.audiencia_tipo = patch.audienciaTipo;
+  if (patch.audienciaComentario !== undefined) out.audiencia_comentario = patch.audienciaComentario;
   if (patch.gcalFechaLimiteEventId !== undefined) out.gcal_fecha_limite_event_id = patch.gcalFechaLimiteEventId;
   if (patch.gcalAudienciaEventId !== undefined) out.gcal_audiencia_event_id = patch.gcalAudienciaEventId;
   if (patch.ciudad !== undefined) out.ciudad = patch.ciudad;
