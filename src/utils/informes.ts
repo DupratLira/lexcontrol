@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import type { Cliente, ExpedienteInforme, TipoInforme } from '../hooks/useInformes';
+import type { Cliente, ExpedienteInforme, Honorario, TipoInforme } from '../hooks/useInformes';
 
 const NAVY: [number, number, number] = [14, 31, 61];
 const GOLD: [number, number, number] = [184, 147, 90];
@@ -44,7 +44,9 @@ export function construirBorrador(
   cliente: Cliente,
   expedientes: ExpedienteInforme[],
   desde: string | null,
-  hasta: string | null
+  hasta: string | null,
+  honorarios: Honorario[] = [],
+  incluirEstadoCuenta = false
 ): string {
   const activos = expedientes.filter((e) => !e.concluido);
   const concluidos = expedientes.filter((e) => e.concluido);
@@ -111,6 +113,28 @@ export function construirBorrador(
     lineas.push('');
     lineas.push('ASUNTOS CONCLUIDOS');
     concluidos.forEach((e) => lineas.push(`- ${contraparte(e)} — Exp. ${e.numero}: ${(tipo === 'cliente' ? e.resumenCliente || 'Concluido' : e.estatus) || 'Concluido'}`));
+  }
+
+  if (honorarios.length && (tipo === 'interno' || incluirEstadoCuenta)) {
+    const pactado = honorarios.reduce((s, h) => s + h.monto, 0);
+    const cobrado = honorarios.filter((h) => h.fechaPago).reduce((s, h) => s + h.monto, 0);
+    lineas.push('');
+    lineas.push(tipo === 'cliente' ? 'ESTADO DE CUENTA DE HONORARIOS' : 'HONORARIOS');
+    lineas.push(`Pactado: ${fmtMonto(pactado)} · Pagado: ${fmtMonto(cobrado)} · Pendiente: ${fmtMonto(pactado - cobrado)}`);
+    const porExp = new Map<string, Honorario[]>();
+    for (const h of honorarios) {
+      const e = expedientes.find((x) => x.id === h.expedienteId);
+      const k = e ? `${contraparte(e)} — Exp. ${e.numero}` : 'General';
+      porExp.set(k, [...(porExp.get(k) ?? []), h]);
+    }
+    for (const [k, hs] of porExp) {
+      lineas.push(`- ${k}`);
+      for (const h of hs) {
+        lineas.push(
+          `   ${h.concepto}: ${fmtMonto(h.monto)} — ${h.fechaPago ? 'pagado ' + fmtFecha(h.fechaPago) : 'pendiente' + (h.evento ? ' (' + h.evento + ')' : '')}`
+        );
+      }
+    }
   }
 
   if (tipo === 'cliente') {

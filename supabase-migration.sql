@@ -49,3 +49,8 @@ create index if not exists actuaciones_expediente_id_idx on public.actuaciones(e
 -- alter table public.actuaciones add column visible_cliente boolean not null default false, add column fecha date default current_date;
 -- política act_select: el cliente solo ve actuaciones con visible_cliente = true
 -- create table public.informes (...); create table public.informe_expedientes (...);  -- RLS: solo staff
+
+-- Honorarios por cliente (aplicada 26-11-2026). RLS: solo staff.
+-- create table public.honorarios (id bigint generated always as identity primary key, cliente_id bigint not null references public.clientes(id),
+--   expediente_id bigint references public.expedientes(id), concepto text not null, monto numeric not null,
+--   fecha_pago date /* null = pendiente */, evento text, notas text, created_by_email text, created_at timestamptz not null default now());

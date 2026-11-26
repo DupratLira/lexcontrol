@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { X, FileText, FolderOpen, Save, Download, Trash2, Wand2, ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { X, FileText, FolderOpen, Save, Download, Trash2, Wand2, ChevronDown, ChevronUp, Lock, Check, Plus } from 'lucide-react';
 import {
   useClientes,
   useInformesCliente,
@@ -8,6 +8,7 @@ import {
   type NivelRiesgo,
   type TipoInforme,
   type EstadoInforme,
+  type Honorario,
 } from '../hooks/useInformes';
 import { construirBorrador, generarInformePdf, fmtFecha, fmtMonto, ETIQUETA_RIESGO } from '../utils/informes';
 
@@ -148,11 +149,109 @@ function TarjetaExpediente({
   );
 }
 
+function PanelHonorarios({
+  honorarios,
+  expedientes,
+  clienteId,
+  onGuardar,
+  onEliminar,
+}: {
+  honorarios: Honorario[];
+  expedientes: ExpedienteInforme[];
+  clienteId: number;
+  onGuardar: (h: Omit<Honorario, 'id'> & { id?: number }) => Promise<void>;
+  onEliminar: (id: number) => Promise<void>;
+}) {
+  const [nuevo, setNuevo] = useState({ expedienteId: '', concepto: '', monto: '', evento: '', pagado: '' });
+  const pactado = honorarios.reduce((s, h) => s + h.monto, 0);
+  const cobrado = honorarios.filter((h) => h.fechaPago).reduce((s, h) => s + h.monto, 0);
+  const nombreExp = (id: number | null) => {
+    const e = expedientes.find((x) => x.id === id);
+    if (!e) return 'General';
+    const cp = e.posicionCliente === 'actor' || e.posicionCliente === 'quejoso' ? e.demandado : e.actor;
+    return `${cp} · ${e.numero}`;
+  };
+  const err = (e: unknown) => alert('Error: ' + (e instanceof Error ? e.message : String(e)));
+  const agregar = () => {
+    if (!nuevo.concepto.trim() || !nuevo.monto.trim()) return;
+    onGuardar({
+      clienteId,
+      expedienteId: nuevo.expedienteId ? Number(nuevo.expedienteId) : null,
+      concepto: nuevo.concepto.trim(),
+      monto: Number(nuevo.monto.replace(/[$,\s]/g, '')),
+      fechaPago: nuevo.pagado || null,
+      evento: nuevo.evento.trim() || null,
+      notas: null,
+    })
+      .then(() => setNuevo({ expedienteId: '', concepto: '', monto: '', evento: '', pagado: '' }))
+      .catch(err);
+  };
+  return (
+    <div className="bg-white rounded-lg p-3 shadow-sm">
+      <div className="flex items-center gap-1 text-[11px] font-semibold tracking-wide text-navy-900/50 mb-2">
+        <Lock size={10} /> HONORARIOS
+      </div>
+      <div className="grid grid-cols-3 gap-2 mb-3 text-center">
+        <div><div className="text-[10px] text-navy-900/50">Pactado</div><div className="text-sm font-semibold">{fmtMonto(pactado) || '$0.00'}</div></div>
+        <div><div className="text-[10px] text-navy-900/50">Cobrado</div><div className="text-sm font-semibold text-emerald-700">{fmtMonto(cobrado) || '$0.00'}</div></div>
+        <div><div className="text-[10px] text-navy-900/50">Por cobrar</div><div className="text-sm font-semibold text-amber-700">{fmtMonto(pactado - cobrado) || '$0.00'}</div></div>
+      </div>
+      <div className="space-y-1 max-h-64 overflow-y-auto">
+        {honorarios.map((h) => (
+          <div key={h.id} className="flex items-center gap-2 text-[11px] border-b border-navy-900/5 py-1">
+            <div className="flex-1 min-w-0">
+              <div className="truncate text-navy-900"><b>{h.concepto}</b> · {fmtMonto(h.monto)}</div>
+              <div className="truncate text-navy-900/50">{nombreExp(h.expedienteId)}{h.evento ? ' · ' + h.evento : ''}</div>
+            </div>
+            {h.fechaPago ? (
+              <span className="text-emerald-700 whitespace-nowrap">Pagado {fmtFecha(h.fechaPago)}</span>
+            ) : (
+              <button
+                onClick={() => {
+                  const f = prompt('Fecha de pago (AAAA-MM-DD)', new Date().toISOString().slice(0, 10));
+                  if (f) onGuardar({ ...h, fechaPago: f }).catch(err);
+                }}
+                className="flex items-center gap-1 text-amber-700 hover:underline whitespace-nowrap"
+              >
+                <Check size={11} /> Marcar pagado
+              </button>
+            )}
+            <button onClick={() => confirm('¿Eliminar este concepto?') && onEliminar(h.id).catch(err)} className="text-navy-900/30 hover:text-red-600">
+              <Trash2 size={11} />
+            </button>
+          </div>
+        ))}
+        {honorarios.length === 0 && <div className="text-xs text-navy-900/40">Sin honorarios registrados.</div>}
+      </div>
+      <div className="mt-3 border-t border-navy-900/10 pt-2 space-y-1.5">
+        <select value={nuevo.expedienteId} onChange={(e) => setNuevo({ ...nuevo, expedienteId: e.target.value })} className="w-full border border-navy-900/15 rounded px-2 py-1 text-[11px]">
+          <option value="">General (sin expediente)</option>
+          {expedientes.map((e) => (
+            <option key={e.id} value={e.id}>{nombreExp(e.id)}</option>
+          ))}
+        </select>
+        <div className="flex gap-1.5">
+          <input value={nuevo.concepto} onChange={(e) => setNuevo({ ...nuevo, concepto: e.target.value })} placeholder="Concepto" className="flex-1 border border-navy-900/15 rounded px-2 py-1 text-[11px]" />
+          <input value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder="Monto" className="w-24 border border-navy-900/15 rounded px-2 py-1 text-[11px]" />
+        </div>
+        <div className="flex gap-1.5">
+          <input value={nuevo.evento} onChange={(e) => setNuevo({ ...nuevo, evento: e.target.value })} placeholder="Se cobra en (audiencia, sentencia…)" className="flex-1 border border-navy-900/15 rounded px-2 py-1 text-[11px]" />
+          <input type="date" value={nuevo.pagado} onChange={(e) => setNuevo({ ...nuevo, pagado: e.target.value })} title="Fecha de pago (vacío = pendiente)" className="w-32 border border-navy-900/15 rounded px-1 py-1 text-[11px]" />
+        </div>
+        <button onClick={agregar} className="flex items-center gap-1 bg-navy-900 text-cream text-[11px] px-3 py-1.5 rounded-md">
+          <Plus size={11} /> Agregar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function InformesView({ userEmail, onClose }: Props) {
   const { clientes, error: errClientes } = useClientes();
   const [clienteId, setClienteId] = useState<number | null>(null);
-  const { expedientes, informes, loading, error, guardarDatosExpediente, guardarInforme, eliminarInforme, cambiarVisibilidadActuacion } = useInformesCliente(clienteId, userEmail);
+  const { expedientes, informes, honorarios, guardarHonorario, eliminarHonorario, loading, error, guardarDatosExpediente, guardarInforme, eliminarInforme, cambiarVisibilidadActuacion } = useInformesCliente(clienteId, userEmail);
 
+  const [incluirEstadoCuenta, setIncluirEstadoCuenta] = useState(false);
   const [editando, setEditando] = useState<(Partial<Informe> & { tipo: TipoInforme }) | null>(null);
   const [guardando, setGuardando] = useState(false);
 
@@ -188,7 +287,7 @@ export default function InformesView({ userEmail, onClose }: Props) {
       periodoInicio: desde,
       periodoFin: hasta,
       titulo: `${tipo === 'cliente' ? 'Informe de asuntos' : 'Informe interno'} — ${cliente.nombre} — ${fmtFecha(hasta)}`,
-      contenido: construirBorrador(tipo, cliente, expedientes, desde, hasta),
+      contenido: construirBorrador(tipo, cliente, expedientes, desde, hasta, honorarios, incluirEstadoCuenta),
       estado: 'borrador',
     });
   };
@@ -196,7 +295,7 @@ export default function InformesView({ userEmail, onClose }: Props) {
   const regenerar = () => {
     if (!cliente || !editando) return;
     if (editando.contenido && !confirm('Se reemplazará el texto actual por un borrador nuevo. ¿Continuar?')) return;
-    setEditando({ ...editando, contenido: construirBorrador(editando.tipo, cliente, expedientes, editando.periodoInicio ?? null, editando.periodoFin ?? null) });
+    setEditando({ ...editando, contenido: construirBorrador(editando.tipo, cliente, expedientes, editando.periodoInicio ?? null, editando.periodoFin ?? null, honorarios, incluirEstadoCuenta) });
   };
 
   const guardar = async (estado: EstadoInforme) => {
@@ -309,6 +408,10 @@ export default function InformesView({ userEmail, onClose }: Props) {
                     <button onClick={() => nuevo('cliente')} className="flex-1 bg-navy-900 text-cream text-xs px-3 py-2 rounded-md">Al cliente</button>
                     <button onClick={() => nuevo('interno')} className="flex-1 bg-navy-800/10 text-navy-900 text-xs px-3 py-2 rounded-md border border-navy-900/15">Interno / estrategia</button>
                   </div>
+                  <label className="flex items-center gap-2 text-[11px] text-navy-900/70">
+                    <input type="checkbox" checked={incluirEstadoCuenta} onChange={(e) => setIncluirEstadoCuenta(e.target.checked)} />
+                    Incluir estado de cuenta de honorarios en el informe al cliente
+                  </label>
                   <div className="text-[10px] text-navy-900/50">
                     El borrador toma el estado de cada expediente y las actuaciones desde el último informe enviado. El informe al cliente solo incluye actuaciones visibles al cliente y nunca la estrategia ni los riesgos.
                   </div>
@@ -360,6 +463,14 @@ export default function InformesView({ userEmail, onClose }: Props) {
                     </div>
                   </div>
                 )}
+
+                <PanelHonorarios
+                  honorarios={honorarios}
+                  expedientes={expedientes}
+                  clienteId={cliente.id}
+                  onGuardar={guardarHonorario}
+                  onEliminar={eliminarHonorario}
+                />
 
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <div className="text-[11px] font-semibold tracking-wide text-navy-900/50 mb-2">HISTORIAL</div>

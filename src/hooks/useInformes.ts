@@ -63,6 +63,17 @@ export interface Informe {
   enviadoEn: string | null;
 }
 
+export interface Honorario {
+  id: number;
+  clienteId: number;
+  expedienteId: number | null;
+  concepto: string;
+  monto: number;
+  fechaPago: string | null; // null = pendiente
+  evento: string | null;
+  notas: string | null;
+}
+
 export function useClientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +104,7 @@ export function useClientes() {
 export function useInformesCliente(clienteId: number | null, userEmail: string) {
   const [expedientes, setExpedientes] = useState<ExpedienteInforme[]>([]);
   const [informes, setInformes] = useState<Informe[]>([]);
+  const [honorarios, setHonorarios] = useState<Honorario[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,6 +112,7 @@ export function useInformesCliente(clienteId: number | null, userEmail: string) 
     if (!clienteId) {
       setExpedientes([]);
       setInformes([]);
+      setHonorarios([]);
       return;
     }
     setLoading(true);
@@ -115,6 +128,25 @@ export function useInformesCliente(clienteId: number | null, userEmail: string) 
         .order('fecha_limite', { ascending: true, nullsFirst: false });
       if (e1) throw e1;
       const ids = (exps ?? []).map((e) => e.id);
+
+      const { data: hons } = await supabase
+        .from('honorarios')
+        .select('id, cliente_id, expediente_id, concepto, monto, fecha_pago, evento, notas')
+        .eq('cliente_id', clienteId)
+        .order('expediente_id')
+        .order('id');
+      setHonorarios(
+        (hons ?? []).map((h) => ({
+          id: h.id,
+          clienteId: h.cliente_id,
+          expedienteId: h.expediente_id,
+          concepto: h.concepto,
+          monto: Number(h.monto),
+          fechaPago: h.fecha_pago,
+          evento: h.evento,
+          notas: h.notas,
+        }))
+      );
 
       const [{ data: internos }, { data: acts }, { data: infs, error: e3 }] = await Promise.all([
         ids.length
@@ -277,6 +309,35 @@ export function useInformesCliente(clienteId: number | null, userEmail: string) 
     [load]
   );
 
+  const guardarHonorario = useCallback(
+    async (h: Omit<Honorario, 'id'> & { id?: number }) => {
+      const payload = {
+        cliente_id: h.clienteId,
+        expediente_id: h.expedienteId,
+        concepto: h.concepto,
+        monto: h.monto,
+        fecha_pago: h.fechaPago,
+        evento: h.evento,
+        notas: h.notas,
+      };
+      const { error: err } = h.id
+        ? await supabase.from('honorarios').update(payload).eq('id', h.id)
+        : await supabase.from('honorarios').insert({ ...payload, created_by_email: userEmail });
+      if (err) throw err;
+      await load();
+    },
+    [userEmail, load]
+  );
+
+  const eliminarHonorario = useCallback(
+    async (id: number) => {
+      const { error: err } = await supabase.from('honorarios').delete().eq('id', id);
+      if (err) throw err;
+      await load();
+    },
+    [load]
+  );
+
   const eliminarInforme = useCallback(
     async (id: number) => {
       const { error: err } = await supabase.from('informes').delete().eq('id', id);
@@ -286,5 +347,5 @@ export function useInformesCliente(clienteId: number | null, userEmail: string) 
     [load]
   );
 
-  return { expedientes, informes, loading, error, reload: load, guardarDatosExpediente, guardarInforme, eliminarInforme, cambiarVisibilidadActuacion };
+  return { expedientes, informes, honorarios, guardarHonorario, eliminarHonorario, loading, error, reload: load, guardarDatosExpediente, guardarInforme, eliminarInforme, cambiarVisibilidadActuacion };
 }
