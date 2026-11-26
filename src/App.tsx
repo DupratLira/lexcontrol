@@ -15,6 +15,7 @@ import InstallPrompt from './components/InstallPrompt';
 import Login, { NuevaContrasena } from './components/Login';
 import AdminUsuarios from './components/AdminUsuarios';
 import ReportesView from './components/ReportesView';
+import InformesView from './components/InformesView';
 import Privacidad from './components/Privacidad';
 import { useAuth } from './hooks/useAuth';
 import { useExpedientes } from './hooks/useExpedientes';
@@ -85,6 +86,7 @@ function Dashboard({
   } = useExpedientes(userEmail);
   const { isAdmin, rol } = useRolActual(userEmail);
   const esCliente = rol === 'cliente';
+  const esStaff = rol === 'admin' || rol === 'abogado';
   const { marcarVisto, tieneActualizacion } = useNotificacionesCliente(userId, esCliente);
 
   const [search, setSearch] = useState('');
@@ -95,6 +97,7 @@ function Dashboard({
   const [showNewModal, setShowNewModal] = useState(false);
   const [showUsuarios, setShowUsuarios] = useState(false);
   const [showReportes, setShowReportes] = useState(false);
+  const [showInformes, setShowInformes] = useState(false);
 
   const stats = useMemo(() => computeStats(expedientes), [expedientes]);
 
@@ -154,6 +157,8 @@ function Dashboard({
         isAdmin={isAdmin}
         onOpenUsuarios={() => setShowUsuarios(true)}
         onOpenReportes={() => setShowReportes(true)}
+        esStaff={esStaff}
+        onOpenInformes={() => setShowInformes(true)}
         mostrarZip={isAdmin || esCliente}
       />
 
@@ -252,6 +257,8 @@ function Dashboard({
       {showUsuarios && <AdminUsuarios onClose={() => setShowUsuarios(false)} />}
 
       {showReportes && <ReportesView expedientes={expedientes} onClose={() => setShowReportes(false)} />}
+
+      {showInformes && esStaff && <InformesView userEmail={userEmail} onClose={() => setShowInformes(false)} />}
     </div>
   );
 }

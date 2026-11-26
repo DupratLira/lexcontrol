@@ -1,4 +1,4 @@
-import { BarChart3, Calendar, Download, LogOut, Users } from 'lucide-react';
+import { BarChart3, Calendar, Download, FileText, LogOut, Users } from 'lucide-react';
 
 interface Props {
   userEmail: string;
@@ -8,10 +8,12 @@ interface Props {
   isAdmin?: boolean;
   onOpenUsuarios?: () => void;
   onOpenReportes?: () => void;
+  esStaff?: boolean;
+  onOpenInformes?: () => void;
   mostrarZip?: boolean;
 }
 
-export default function Header({ userEmail, onConectar, onExportZip, onLogout, isAdmin, onOpenUsuarios, onOpenReportes, mostrarZip = true }: Props) {
+export default function Header({ userEmail, onConectar, onExportZip, onLogout, isAdmin, onOpenUsuarios, onOpenReportes, esStaff, onOpenInformes, mostrarZip = true }: Props) {
   const initials = userEmail.slice(0, 2).toUpperCase();
   return (
     <header className="bg-navy-900 text-cream border-b border-navy-700/60">
@@ -43,6 +45,15 @@ export default function Header({ userEmail, onConectar, onExportZip, onLogout, i
               className="flex items-center gap-2 bg-navy-800 hover:bg-navy-700 transition-colors text-cream/90 text-sm px-2.5 sm:px-3 py-2 rounded-lg border border-navy-700"
             >
               <BarChart3 size={16} /> <span className="hidden sm:inline">Reportes</span>
+            </button>
+          )}
+          {esStaff && (
+            <button
+              onClick={onOpenInformes}
+              title="Informes clientes"
+              className="flex items-center gap-2 bg-navy-800 hover:bg-navy-700 transition-colors text-cream/90 text-sm px-2.5 sm:px-3 py-2 rounded-lg border border-navy-700"
+            >
+              <FileText size={16} /> <span className="hidden sm:inline">Informes</span>
             </button>
           )}
           <button
